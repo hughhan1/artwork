@@ -1,0 +1,5 @@
+env/
+images/*.jpg
+images/*.png
+json/*.json
+

@@ -11,4 +11,4 @@ thumbnails/*.png
 json/*.json
 
 # Mac OSX Files
-.DS_Store
+.DS_Store*

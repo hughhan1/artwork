@@ -9,6 +9,7 @@ from urllib  import urlretrieve
 from urllib2 import urlopen
 
 import json
+import os
 import sys
 
 
@@ -52,7 +53,7 @@ def get_image(url, filename):
         print('error   : no image found at .' % (url))
     else:
         try:
-            urlretrieve(image_link, image_dir + '/' + filename)
+            urlretrieve(image_link, os.path.join(image_dir, filename))
             print('success : %s downdloaded to %s directory.' % (filename, image_dir))
         except AttributeError:
             print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
@@ -76,7 +77,7 @@ def get_thumbnail(url, filename):
         print('error: url cannot be an empty string.' % (filename, thumb_dir))
     else:
         try:
-            urlretrieve(url, thumb_dir + '/' + filename)
+            urlretrieve(url, os.path.join(thumb_dir, filename))
             print('success : %s downdloaded to %s directory.' % (filename, thumb_dir))
         except AttributeError:
             print('error   : %s could not be downloaded to %s directory.' % (filename, thumb_dir))

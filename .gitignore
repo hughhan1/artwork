@@ -1,5 +1,14 @@
+# Virtual Environemnt
 env/
+
+# Image Files
 images/*.jpg
 images/*.png
+thumbnails/*.jpg
+thumbnails/*.png
+
+# JSON Files
 json/*.json
 
+# Mac OSX Files
+.DS_Store

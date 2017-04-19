@@ -54,7 +54,7 @@ def get_image(url, filename):
     else:
         try:
             urlretrieve(image_link, os.path.join(image_dir, filename))
-            print('success : %s downdloaded to %s directory.' % (filename, image_dir))
+            print('success : %s downloaded to %s directory.' % (filename, image_dir))
         except AttributeError:
             print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
     return image_link
@@ -78,7 +78,7 @@ def get_thumbnail(url, filename):
     else:
         try:
             urlretrieve(url, os.path.join(thumb_dir, filename))
-            print('success : %s downdloaded to %s directory.' % (filename, thumb_dir))
+            print('success : %s downloaded to %s directory.' % (filename, thumb_dir))
         except AttributeError:
             print('error   : %s could not be downloaded to %s directory.' % (filename, thumb_dir))
     return url
@@ -123,7 +123,7 @@ def get_thumbnails(artworks_filename):
 
 
 def main():
-    if sys.argv > 1:
+    if len(sys.argv) > 1:
         if sys.argv[1] == '-t' or sys.argv[1] == '--thumbnails':    
             get_thumbnails(artworks_file)
         else:

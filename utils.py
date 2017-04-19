@@ -2,6 +2,7 @@ import os, sys
 import numpy as np
 from PIL import Image
 import h5py
+import glob
 
 def process_images(base_dir, size):
 	"""
@@ -16,35 +17,34 @@ def process_images(base_dir, size):
     	X_color 	: design matrix of colored images
     	X_gray		: design matrix for grayscale
     """
-	images = os.listdir(base_dir)
 
 	#dimensions for design matrices
-	#TODO: assumes that all images were able to be downloaded
-	N = len(images)
+	N = len(glob.glob1(base_dir, '*.jpg'))
 	d = (size[0] * size[1])
 
 	#design matrices, color stacks RBG
 	X_color = np.zeros((N, d*3))
 	X_gray = np.zeros((N, d))
 
-	for file in images:
-		print("Processing: " + file)
+	idx = 0
+	for file in os.listdir(base_dir):
 
-		#index into design matrix, can be arbitrary but we may want 
-		#to have access to each specifc images' component later
-		idx = int(os.path.splitext(file)[0]) - 1
+		if file.endswith('.jpg'):
+			print("Processing: " + file)
 
-		#load image and resize
-		im = Image.open(base_dir+file)
-	   	im = im.resize(size, Image.ANTIALIAS)
+			#load image and resize
+			im = Image.open(base_dir+file)
+		   	im = im.resize(size, Image.ANTIALIAS)
 
-	   	#reshape to 1-d vector (and convert to grayscale)
-		color_array = np.array(im).ravel()
-		gray_array = np.array(im.convert('L')).ravel()
+		   	#reshape to 1-d vector (and convert to grayscale)
+			color_array = np.array(im).ravel()
+			gray_array = np.array(im.convert('L')).ravel()
 
-		#load 1-d vector into respective position
-	   	X_color[idx, :] = color_array.T
-	   	X_gray[idx, :] = gray_array.T
+			#load 1-d vector into respective position
+		   	X_color[idx, :] = color_array.T
+		   	X_gray[idx, :] = gray_array.T
+
+		   	idx += 1
 
 	return X_color, X_gray
 

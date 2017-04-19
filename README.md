@@ -42,7 +42,7 @@ $ python moma.py -t
 Regular sized images will be saved into the `images/` directory, and thumbnails will be
 saved into the `thumbnails/` directory.
 
-## Scraping
+## Image Processing/ Dataset Creation
 
 Images must be stored in a directory named "images", only containing the revant JPEG images needed to be processed (remove any extranoeos files, ie .*).
 
@@ -50,5 +50,3 @@ To create an h5py dataset file, run the following command.
 ```
 $ python utils.py
 ```
-
-Currently, the images must be numbered in ascending order (assumes all images can be scrapped, from experience sometimes this fails but it can be easily fixed if needed).

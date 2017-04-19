@@ -3,7 +3,6 @@
 Classification of Artwork Genres Using Image Data.
 
 #### TODO
-- Resize image (`.jpg`) files into a consistent M x N dimensionality format.
 - Design classification labels. (Perhaps we can use year intervals for now.)
 - Load data vectors and true labels into SciKit-Learn (`sklearn`), and begin training.
 
@@ -42,3 +41,14 @@ $ python moma.py -t
 
 Regular sized images will be saved into the `images/` directory, and thumbnails will be
 saved into the `thumbnails/` directory.
+
+## Scraping
+
+Images must be stored in a directory named "images", only containing the revant JPEG images needed to be processed (remove any extranoeos files, ie .*).
+
+To create an h5py dataset file, run the following command.
+```
+$ python utils.py
+```
+
+Currently, the images must be numbered in ascending order (assumes all images can be scrapped, from experience sometimes this fails but it can be easily fixed if needed).

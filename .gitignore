@@ -7,6 +7,9 @@ images/*.png
 thumbnails/*.jpg
 thumbnails/*.png
 
+# Data Files
+*.h5
+
 # JSON Files
 json/*.json
 

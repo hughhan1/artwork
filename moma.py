@@ -98,7 +98,8 @@ def get_images(artworks_filename):
     for artwork in artworks_data:
         url       = artwork['URL']
         object_id = artwork['ObjectID']
-        get_image(url, str(object_id) + '.jpg')
+        if url is not None:
+            get_image(url, str(object_id) + '.jpg')
     
     artworks_file.close()
 

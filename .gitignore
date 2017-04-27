@@ -9,6 +9,7 @@ thumbnails/*.png
 
 # Data Files
 *.h5
+*.csv
 
 # JSON Files
 json/*.json

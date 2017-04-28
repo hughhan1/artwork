@@ -48,17 +48,21 @@ def get_image(url, filename):
     """
     soup       = make_soup(url)
     image_tag  = soup.find('meta', property='og:image', content=True)
-    image_link = image_tag['content']
+    image_link = ""
+    try:
+        image_link = image_tag['content']
 
-    if image_link == "":
-        print('error   : no image found at .' % (url))
-    else:
-        try:
-            print(image_link)
-            urlretrieve(image_link, os.path.join(image_dir, filename))
-            print('success : %s downloaded to %s directory.' % (filename, image_dir))
-        except AttributeError:
-            print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
+        if image_link == "":
+            print('error   : no image found at .' % (url))
+        else:
+            try:
+                print(image_link)
+                urlretrieve(image_link, os.path.join(image_dir, filename))
+                print('success : %s downloaded to %s directory.' % (filename, image_dir))
+            except AttributeError:
+                print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
+    except TypeError:
+        print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
     return image_link
 
 
@@ -94,7 +98,7 @@ def get_images(ids):
     Args:
         ids : list of artwork IDs (numeric)
     """
-    for id in ids:
+    for id in range(int(ids)):
         url       = "https://www.getty.edu/art/collection/objects/" + str(id)
         print(url)
         object_id = id
@@ -110,7 +114,7 @@ def get_thumbnails(ids):
         ids : the list of artwork IDs (numeric)
     """
 
-    for id in ids:
+    for id in range(int(ids)):
         url       = "https://www.getty.edu/art/collection/objects/" + str(id)
         print(url)
         object_id = id

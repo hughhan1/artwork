@@ -167,11 +167,9 @@ def write_labels(labels_map, filename):
             (val, sum(x == val for x in labels_map.values()))
         )
 
-    # Write the results to a CSV file, structured as objectID\tlabel
-    with open(filename, "w") as output:
-        writer = csv.writer(output, delimiter='\t', lineterminator='\n')
-        for key, val in labels_map.iteritems():
-            writer.writerow([key, val])
+    w = csv.writer(open(filename, "w"))
+    for key, val in labels_map.items():
+        w.writerow([key, val])
 
 
 def main():

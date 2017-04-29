@@ -8,18 +8,19 @@ from bs4 import BeautifulSoup
 from urllib  import urlretrieve
 from urllib2 import urlopen
 
+import csv
 import json
 import os
 import socket
 import sys
-import csv
 
 
 image_dir     = 'images'
 thumb_dir     = 'thumbnails'
 artworks_file = 'json/artworks.json'
 
-pad = 6 #padding to ensure filnames are 6 characters, for sorting in utils.py
+padding       = 6
+
 max_imgs = 10000 #TODO: pass as argument
 
 
@@ -94,6 +95,59 @@ def get_thumbnail(url, filename):
     return url
 
 
+def get_images(artworks_filename):
+    """
+    Iterates through a JSON data file, and retrieves all images associated with
+    it, and downloads them to an image directory
+
+    Args:
+        artworks_filename : the filename of the JSON data file
+    """
+    artworks_file = open(artworks_filename)
+    artworks_data = json.load(artworks_file)
+
+    classification_labels = {}
+    i = 0
+    for artwork in artworks_data[:max_imgs]:
+
+        if i % 500 != 0:
+            i += 1
+            continue
+        else:
+            i += 1
+
+        url            = artwork['URL']
+        object_id      = artwork['ObjectID']
+        classification = artwork['Classification']
+
+        if url is not None:
+            image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
+            get_image(url, image_filename)
+            classification_labels['moma_' + str(object_id)] = classification 
+    
+    write_labels(classification_labels, "moma.csv")
+    artworks_file.close()
+
+
+def get_thumbnails(artworks_filename):
+    """
+    Iterates through a JSON data file, and retrieves all thumbnails associated
+    with it, and downloads them to a thumbnail directory
+
+    Args:
+        artworks_filename : the filename of the JSON data file
+    """
+    artworks_file = open(artworks_filename)
+    artworks_data = json.load(artworks_file)
+    
+    for artwork in artworks_data:
+        url       = artwork['ThumbnailURL']
+        object_id = artwork['ObjectID']
+        get_thumbnail(url, str(object_id).zfill(pad) + '.jpg')
+    
+    artworks_file.close()
+
+
 def write_labels(labels_map, filename):
     """
     Creates CSV file of labels (nationality, date) to be used by utils.py
@@ -118,58 +172,6 @@ def write_labels(labels_map, filename):
         writer = csv.writer(output, delimiter='\t', lineterminator='\n')
         for key, val in labels_map.iteritems():
             writer.writerow([key, val])
-
-
-def get_images(artworks_filename):
-    """
-    Iterates through a JSON data file, and retrieves all images associated with
-    it, and downloads them to an image directory
-
-    Args:
-        artworks_filename : the filename of the JSON data file
-    """
-    artworks_file = open(artworks_filename)
-    artworks_data = json.load(artworks_file)
-    
-    classification_labels = {}
-    i = 0
-    for artwork in artworks_data[:max_imgs]:
-
-        if i % 500 != 0:
-            i += 1
-            continue
-        else:
-            i += 1
-
-        url            = artwork['URL']
-        object_id      = artwork['ObjectID']
-        classification = artwork['Classification']
-
-        if url is not None:
-            get_image(url, str(object_id).zfill(pad) + '.jpg')
-            classification_labels[object_id] = classification 
-    
-    write_labels(classification_labels, "foo.csv")
-    artworks_file.close()
-
-
-def get_thumbnails(artworks_filename):
-    """
-    Iterates through a JSON data file, and retrieves all thumbnails associated
-    with it, and downloads them to a thumbnail directory
-
-    Args:
-        artworks_filename : the filename of the JSON data file
-    """
-    artworks_file = open(artworks_filename)
-    artworks_data = json.load(artworks_file)
-    
-    for artwork in artworks_data:
-        url       = artwork['ThumbnailURL']
-        object_id = artwork['ObjectID']
-        get_thumbnail(url, str(object_id).zfill(pad) + '.jpg')
-    
-    artworks_file.close()
 
 
 def main():

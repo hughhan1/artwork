@@ -1,6 +1,5 @@
 """
-This script downloads images from the MoMA collection, using data provided in
-the artworks.json file.
+This script downloads images from the Getty collection
 """
 
 
@@ -8,16 +7,16 @@ from bs4 import BeautifulSoup
 from urllib  import urlretrieve
 from urllib2 import urlopen
 
+import csv
 import json
 import os
 import sys
 
 
-image_dir     = 'getty_images'
-thumb_dir     = 'getty_thumbnails'
+image_dir     = 'images'
+thumb_dir     = 'thumbnails'
 
-#https://www.getty.edu/art/collection/objects/
-
+padding       = 6
 
 def make_soup(url):
     """
@@ -56,7 +55,6 @@ def get_image(url, filename):
             print('error   : no image found at .' % (url))
         else:
             try:
-                print(image_link)
                 urlretrieve(image_link, os.path.join(image_dir, filename))
                 print('success : %s downloaded to %s directory.' % (filename, image_dir))
             except AttributeError:
@@ -64,30 +62,6 @@ def get_image(url, filename):
     except TypeError:
         print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
     return image_link
-
-
-def get_thumbnail(url, filename):
-    """
-    Retrieves the thumbnail associated with the URL provided, and writes it
-    using the filename provided.
-
-    Args:
-        url      : the URL with information about a particular piece of artwork
-        filename : the filename to which the thumbnail should be saved
-
-    Returns:
-        a string containing the href link to the thumbnail that was written
-    """
-
-    if url == "":
-        print('error: url cannot be an empty string.' % (filename, thumb_dir))
-    else:
-        try:
-            urlretrieve(url, os.path.join(thumb_dir, filename))
-            print('success : %s downloaded to %s directory.' % (filename, thumb_dir))
-        except AttributeError:
-            print('error   : %s could not be downloaded to %s directory.' % (filename, thumb_dir))
-    return url
 
 
 def get_images(ids):
@@ -98,38 +72,50 @@ def get_images(ids):
     Args:
         ids : list of artwork IDs (numeric)
     """
-    for id in range(int(ids)):
-        url       = "https://www.getty.edu/art/collection/objects/" + str(id)
-        print(url)
-        object_id = id
-        if url is not None:
-            get_image(url, str(object_id) + '.jpg')
 
-def get_thumbnails(ids):
+    classification_labels = {}
+
+    for id in range(int(ids)):
+        url = "https://www.getty.edu/art/collection/objects/" + str(id)
+        image_filename = 'getty_' + str(id).zfill(padding) + '.jpg'
+        get_image(url, image_filename)
+
+        # TODO: classification is currently hard-coded as "Getty". We should
+        #       scrape the type of artwork as well, as this is available from
+        #       the same URL as the image.
+        classification_labels['getty_' + str(id)] = 'Getty'
+
+    write_labels(classification_labels, 'getty.csv')
+
+
+def write_labels(labels_map, filename):
     """
-    Iterates through a ID numbers on getty.edu, and retrieves all thumbnails associated
-    with it, and downloads them to a thumbnail directory
+    Creates CSV file of labels (nationality, date) to be used by utils.py
 
     Args:
-        ids : the list of artwork IDs (numeric)
+        labels_map : a dictionary with key objectID and value label name
+        filename   : the filename to which the output should be written
     """
 
-    for id in range(int(ids)):
-        url       = "https://www.getty.edu/art/collection/objects/" + str(id)
-        print(url)
-        object_id = id
-        get_thumbnail(url, str(object_id) + '.jpg')
+    unique_values = set()            # Create a set of non-repeated labels
+    for val in labels_map.values():  # from our label map.
+        unique_values.add(val)
 
+    for val in unique_values:        # Count the number of times each label
+        sys.stderr.write(            # occured.
+            "%s : %d\n" % 
+            (val, sum(x == val for x in labels_map.values()))
+        )
+
+    # Write the results to a CSV file, structured as objectID\tlabel
+    with open(filename, "w") as output:
+        writer = csv.writer(output, delimiter='\t', lineterminator='\n')
+        for key, val in labels_map.iteritems():
+            writer.writerow([key, val])
 
 
 def main():
-    if len(sys.argv) > 2:
-        if sys.argv[1] == '-t' or sys.argv[1] == '--thumbnails':
-            get_thumbnails(sys.argv[2])
-        else:
-            raise Exception
-    elif len(sys.argv) > 1:
-        get_images(sys.argv[1])
+    get_images(sys.argv[1])
 
 
 if __name__ == '__main__':

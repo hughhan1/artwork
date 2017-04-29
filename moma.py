@@ -123,7 +123,7 @@ def get_images(artworks_filename):
         if url is not None:
             image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
             get_image(url, image_filename)
-            classification_labels['moma_' + str(object_id)] = classification 
+            classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
     
     write_labels(classification_labels, "moma.csv")
     artworks_file.close()
@@ -143,7 +143,7 @@ def get_thumbnails(artworks_filename):
     for artwork in artworks_data:
         url       = artwork['ThumbnailURL']
         object_id = artwork['ObjectID']
-        get_thumbnail(url, str(object_id).zfill(pad) + '.jpg')
+        get_thumbnail(url, str(object_id).zfill(padding) + '.jpg')
     
     artworks_file.close()
 

@@ -94,7 +94,7 @@ def get_images(ids):
         # some error with either obtaining the actual artwork itself or the
         # classification of the artwork.
         if classification != "":
-            classification_labels['getty_' + str(id)] = classification
+            classification_labels['getty_' + str(id).zfill(padding)] = classification
 
     write_labels(classification_labels, 'getty.csv')
 
@@ -121,10 +121,9 @@ def write_labels(labels_map, filename):
     sys.stderr.write("============================\n")
 
     # Write the results to a CSV file, structured as objectID\tlabel
-    with open(filename, "w") as output:
-        writer = csv.writer(output, delimiter='\t', lineterminator='\n')
-        for key, val in labels_map.iteritems():
-            writer.writerow([key, val])
+    w = csv.writer(open(filename, "w"))
+    for key, val in labels_map.items():
+        w.writerow([key, val])
 
 
 def main():

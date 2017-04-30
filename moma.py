@@ -21,7 +21,7 @@ artworks_file = 'json/artworks.json'
 
 padding       = 6
 
-max_imgs = 10000 #TODO: pass as argument
+max_imgs = 100000 #TODO: pass as argument
 
 
 def make_soup(url):
@@ -120,7 +120,8 @@ def get_images(artworks_filename):
         object_id      = artwork['ObjectID']
         classification = artwork['Classification']
 
-        if url is not None:
+        check = ['Drawing', 'Design', 'Photograph'] #temporary
+        if url is not None and classification in check:
             image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
             get_image(url, image_filename)
             classification_labels['moma_' + str(object_id).zfill(padding)] = classification 

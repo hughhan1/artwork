@@ -54,11 +54,12 @@ def process_images(base_dir, size):
 
 	return X_color, X_gray
 
-def read_labels(filename):
+def read_labels(filenames):
 
 	img_labels = {}
-	for key, val in csv.reader(open(filename + ".csv")):
-		img_labels[key] = val
+	for file in filenames:
+		for key, val in csv.reader(open(file + ".csv")):
+			img_labels[key] = val
 
 	
 	unique_labels = list(set(img_labels.values()))
@@ -69,7 +70,7 @@ def read_labels(filename):
 
 
 	#write class labels for future use
-	w = csv.writer(open(filename + "_labels.csv", "w"))
+	w = csv.writer(open("class_labels.csv", "w"))
 	for key, val in class_labels.items():
 		w.writerow([key, val])
 
@@ -117,8 +118,9 @@ def write_dataset(X_color, X_gray, y_nation):
 def main():
 
 	if len(sys.argv) < 2:
-		print("ERROR: requires specification of dataset (i.e. moma, getty, etc)")
+		print('error: requires at least one dataset')
 		sys.exit(0)
+
 
 	#resized image dimensions
 	#TODO: square okay?
@@ -126,9 +128,12 @@ def main():
 
 	#base directory
 	base_dir = "images/"
-	label_file = sys.argv[1]
+	filenames = []
+	for i in range(1, len(sys.argv)):
+		filenames.append(sys.argv[i])
+
 	X_color, X_gray = process_images(base_dir, size)
-	y_nation = read_labels(label_file)
+	y_nation = read_labels(filenames)
 	write_dataset(X_color, X_gray, y_nation)
 
 

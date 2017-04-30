@@ -48,6 +48,6 @@ Images must be stored in a directory named "images", only containing the revant 
 
 To create an h5py dataset file, run the following command.
 ```
-$ python utils.py "dataset"
+$ python utils.py "dataset_1 datset_2 ..."
 ```
-where "dataset" is the desired dataset to be working with (i.e. moma, getty, etc)
+where "dataset_1 datset_2 ..." is a list of datasets (i.e. moma, getty, etc) used, separted by spaces

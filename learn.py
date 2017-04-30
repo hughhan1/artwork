@@ -17,9 +17,6 @@ N = len([f for f in os.listdir('images/') if f.endswith('.jpg')])
 
 kf = KFold(n_splits=3) #leave-one-out: n_splits = N-1
 
-print X.shape
-print y.shape
-
 for train_index, test_index in kf.split(X):
 	X_train, X_test = X[train_index], X[test_index]
 	y_train, y_test = y[train_index], y[test_index]

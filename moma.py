@@ -161,11 +161,13 @@ def write_labels(labels_map, filename):
     for val in labels_map.values():  # from our label map.
         unique_values.add(val)
 
+    sys.stderr.write("======== Statistics ========\n")
     for val in unique_values:        # Count the number of times each label
         sys.stderr.write(            # occured.
             "%s : %d\n" % 
             (val, sum(x == val for x in labels_map.values()))
         )
+    sys.stderr.write("============================\n")
 
     w = csv.writer(open(filename, "w"))
     for key, val in labels_map.items():

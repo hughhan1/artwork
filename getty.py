@@ -45,11 +45,17 @@ def get_image(url, filename):
     Returns:
         a string containing the href link to the image that was written
     """
+    
     soup       = make_soup(url)
     image_tag  = soup.find('meta', property='og:image', content=True)
-    image_link = ""
+    class_tag  = soup.find('meta', attrs={'name' : 'object_type'}, content=True)
+
+    image_link     = ""
+    classification = ""
+
     try:
-        image_link = image_tag['content']
+        image_link     = image_tag['content']
+        classification = class_tag['content']
 
         if image_link == "":
             print('error   : no image found at .' % (url))
@@ -61,7 +67,8 @@ def get_image(url, filename):
                 print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
     except TypeError:
         print('error   : %s could not be downloaded to %s directory.' % (filename, image_dir))
-    return image_link
+
+    return image_link, classification
 
 
 def get_images(ids):
@@ -75,15 +82,19 @@ def get_images(ids):
 
     classification_labels = {}
 
-    for id in range(int(ids)):
+    for id in range(1, int(ids)+1):
+
+        # Iterate through all of the desired IDs, and obtain images and
+        # classifications of the artwork
         url = "https://www.getty.edu/art/collection/objects/" + str(id)
         image_filename = 'getty_' + str(id).zfill(padding) + '.jpg'
-        get_image(url, image_filename)
+        _, classification = get_image(url, image_filename)
 
-        # TODO: classification is currently hard-coded as "Getty". We should
-        #       scrape the type of artwork as well, as this is available from
-        #       the same URL as the image.
-        classification_labels['getty_' + str(id)] = 'Getty'
+        # If the classification is an empty string, that means that there was
+        # some error with either obtaining the actual artwork itself or the
+        # classification of the artwork.
+        if classification != "":
+            classification_labels['getty_' + str(id)] = classification
 
     write_labels(classification_labels, 'getty.csv')
 
@@ -101,11 +112,13 @@ def write_labels(labels_map, filename):
     for val in labels_map.values():  # from our label map.
         unique_values.add(val)
 
+    sys.stderr.write("======== Statistics ========\n")
     for val in unique_values:        # Count the number of times each label
         sys.stderr.write(            # occured.
             "%s : %d\n" % 
             (val, sum(x == val for x in labels_map.values()))
         )
+    sys.stderr.write("============================\n")
 
     # Write the results to a CSV file, structured as objectID\tlabel
     with open(filename, "w") as output:

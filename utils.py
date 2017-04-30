@@ -33,13 +33,13 @@ def process_images(base_dir, size):
 	X_gray = np.zeros((N, d))
 
 	idx = 0
-	for file in sorted(os.listdir(base_dir)):
+	for filename in sorted(os.listdir(base_dir)):
 
-		if file.endswith('.jpg'):
-			print("Processing: " + file)
+		if filename.endswith('.jpg'):
+			sys.stderr.write("Processing: %s\n" % filename)
 
 			#load image and resize
-			im = Image.open(base_dir+file)
+			im = Image.open(os.path.join(base_dir, filename))
 			im = im.resize(size, Image.ANTIALIAS)
 
 			#reshape to 1-d vector (and convert to grayscale)
@@ -57,8 +57,8 @@ def process_images(base_dir, size):
 def read_labels(filenames):
 
 	img_labels = {}
-	for file in filenames:
-		for key, val in csv.reader(open(file + ".csv")):
+	for filename in filenames:
+		for key, val in csv.reader(open(filename + ".csv")):
 			img_labels[key] = val
 
 	
@@ -124,7 +124,7 @@ def main():
 
 	#resized image dimensions
 	#TODO: square okay?
-	size = 500, 500
+	size = 128, 128
 
 	#base directory
 	base_dir = "images/"

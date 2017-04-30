@@ -1,4 +1,5 @@
 import h5py
+import os
 
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.svm import LinearSVC
@@ -11,8 +12,13 @@ X = h5f['color'][:]
 y = h5f['labels'][:]
 h5f.close()
 
+# N is the number of images in the images/ directory.
+N = len([f for f in os.listdir('images/') if f.endswith('.jpg')])
 
-kf = KFold(n_splits=48) #leave-one-out: n_splits = N-1
+kf = KFold(n_splits=3) #leave-one-out: n_splits = N-1
+
+print X.shape
+print y.shape
 
 for train_index, test_index in kf.split(X):
 	X_train, X_test = X[train_index], X[test_index]

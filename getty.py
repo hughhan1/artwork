@@ -50,12 +50,12 @@ def get_image(url, filename):
     image_tag  = soup.find('meta', property='og:image', content=True)
     class_tag  = soup.find('meta', attrs={'name' : 'object_type'}, content=True)
 
-    image_link     = ""
-    classification = ""
+    image_link     = ''
+    classification = ''
 
     try:
         image_link     = image_tag['content']
-        classification = class_tag['content']
+        classification = 'Getty ' + class_tag['content']
 
         if image_link == "":
             print('error   : no image found at .' % (url))
@@ -112,13 +112,13 @@ def write_labels(labels_map, filename):
     for val in labels_map.values():  # from our label map.
         unique_values.add(val)
 
-    sys.stderr.write("======== Statistics ========\n")
+    sys.stderr.write('======== Statistics ========\n')
     for val in unique_values:        # Count the number of times each label
         sys.stderr.write(            # occured.
             "%s : %d\n" % 
             (val, sum(x == val for x in labels_map.values()))
         )
-    sys.stderr.write("============================\n")
+    sys.stderr.write('============================\n')
 
     # Write the results to a CSV file, structured as objectID\tlabel
     w = csv.writer(open(filename, "w"))

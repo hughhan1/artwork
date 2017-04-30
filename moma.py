@@ -110,7 +110,7 @@ def get_images(artworks_filename):
     i = 0
     for artwork in artworks_data[:max_imgs]:
 
-        if i % 500 != 0:
+        if i % 350 != 0:
             i += 1
             continue
         else:
@@ -118,9 +118,15 @@ def get_images(artworks_filename):
 
         url            = artwork['URL']
         object_id      = artwork['ObjectID']
-        classification = artwork['Classification']
+        classification = 'MoMA ' + artwork['Classification']
 
-        check = ['Drawing', 'Design', 'Photograph'] #temporary
+        check = [
+            'MoMA Design',
+            'MoMA Drawing', 
+            'MoMA Painting'
+            'MoMA Photograph',
+        ]
+
         if url is not None and classification in check:
             image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
             get_image(url, image_filename)
@@ -162,13 +168,13 @@ def write_labels(labels_map, filename):
     for val in labels_map.values():  # from our label map.
         unique_values.add(val)
 
-    sys.stderr.write("======== Statistics ========\n")
+    sys.stderr.write('======== Statistics ========\n')
     for val in unique_values:        # Count the number of times each label
         sys.stderr.write(            # occured.
             "%s : %d\n" % 
             (val, sum(x == val for x in labels_map.values()))
         )
-    sys.stderr.write("============================\n")
+    sys.stderr.write('============================\n')
 
     w = csv.writer(open(filename, "w"))
     for key, val in labels_map.items():

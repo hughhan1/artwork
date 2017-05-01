@@ -8,7 +8,27 @@ import csv
 
 from itertools import chain
 
+img_labels = {} #global so can be used elsewhere
+processed_img = []
 
+def label_mapping():
+	for filename in filenames:
+		for key, val in csv.reader(open(filename + ".csv")):
+			img_labels[key + '.jpg'] = val
+
+def clean_imgs(base_dir):
+	"""
+	Deletes any images from directory that are unusable -
+	ie are not RGB, do not have label
+	"""
+	for filename in sorted(os.listdir(base_dir)):
+		if filename.endswith('.jpg'):
+			if filename not in img_labels.keys():
+				os.remove(filename)
+
+			im = Image.open(os.path.join(base_dir, filename))
+			if(im.mode != 'RGB')
+				os.remove(filename)
 
 def process_images(base_dir, size):
 	"""
@@ -38,6 +58,7 @@ def process_images(base_dir, size):
 		if filename.endswith('.jpg'):
 			sys.stderr.write("Processing: %s\n" % filename)
 
+
 			#load image and resize
 			im = Image.open(os.path.join(base_dir, filename))
 			im = im.resize(size, Image.ANTIALIAS)
@@ -50,16 +71,13 @@ def process_images(base_dir, size):
 			X_color[idx, :] = color_array.T
 			X_gray[idx, :] = gray_array.T
 
+			processed_img.append(filename)
+			
 			idx += 1
 
 	return X_color, X_gray
 
 def read_labels(filenames):
-
-	img_labels = {}
-	for filename in filenames:
-		for key, val in csv.reader(open(filename + ".csv")):
-			img_labels[key] = val
 
 	
 	unique_labels = list(set(img_labels.values()))
@@ -75,11 +93,11 @@ def read_labels(filenames):
 		w.writerow([key, val])
 
 	#design matrices, color stacks RBG
-	N = len(img_labels.keys())
+	N = len(processed_img)
 	y = np.zeros((N))
 
 	i = 0
-	images = sorted(img_labels.keys())
+	images = sorted(processed_img)
 	for img in images:
 		label = img_labels[img]
 		y[i] = class_labels[label]
@@ -131,6 +149,10 @@ def main():
 	filenames = []
 	for i in range(1, len(sys.argv)):
 		filenames.append(sys.argv[i])
+
+
+	label_mapping(filenames)
+	clean_imgs(base_dir)
 
 	X_color, X_gray = process_images(base_dir, size)
 	y_nation = read_labels(filenames)

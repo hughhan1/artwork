@@ -11,7 +11,13 @@ from itertools import chain
 img_labels = {} #global so can be used elsewhere
 processed_img = []
 
-def label_mapping():
+def label_mapping(filenames):
+	"""
+	Creates mapping of filename to label from CSV
+
+	Args:
+		filenames	: the names of datasets to be used (moma, getty, etc)
+	"""
 	for filename in filenames:
 		for key, val in csv.reader(open(filename + ".csv")):
 			img_labels[key + '.jpg'] = val
@@ -24,11 +30,11 @@ def clean_imgs(base_dir):
 	for filename in sorted(os.listdir(base_dir)):
 		if filename.endswith('.jpg'):
 			if filename not in img_labels.keys():
-				os.remove(filename)
-
-			im = Image.open(os.path.join(base_dir, filename))
-			if(im.mode != 'RGB')
-				os.remove(filename)
+				os.remove(os.path.join(base_dir, filename))
+			else:
+				im = Image.open(os.path.join(base_dir, filename))
+				if(im.mode != 'RGB'):
+					os.remove(os.path.join(base_dir, filename))
 
 def process_images(base_dir, size):
 	"""
@@ -72,9 +78,11 @@ def process_images(base_dir, size):
 			X_gray[idx, :] = gray_array.T
 
 			processed_img.append(filename)
-			
+
 			idx += 1
 
+
+	print(idx)
 	return X_color, X_gray
 
 def read_labels(filenames):
@@ -153,10 +161,9 @@ def main():
 
 	label_mapping(filenames)
 	clean_imgs(base_dir)
-
 	X_color, X_gray = process_images(base_dir, size)
-	y_nation = read_labels(filenames)
-	write_dataset(X_color, X_gray, y_nation)
+	y = read_labels(filenames)
+	write_dataset(X_color, X_gray, y)
 
 
 if __name__ == '__main__':

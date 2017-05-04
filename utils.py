@@ -8,19 +8,20 @@ import csv
 
 from itertools import chain
 
-img_labels = {} #global so can be used elsewhere
+class_labels = {}
+nation_labels = {}
+date_labels = {} #global so can be used elsewhere
 processed_img = []
 
-def label_mapping(filenames):
+def label_mapping(filename, label_map):
 	"""
 	Creates mapping of filename to label from CSV
 
 	Args:
 		filenames	: the names of datasets to be used (moma, getty, etc)
 	"""
-	for filename in filenames:
-		for key, val in csv.reader(open(filename + ".csv")):
-			img_labels[key + '.jpg'] = val
+	for key, val in csv.reader(open(filename + ".csv")):
+		label_map[key + '.jpg'] = val
 
 def clean_imgs(base_dir):
 	"""
@@ -29,12 +30,13 @@ def clean_imgs(base_dir):
 	"""
 	for filename in sorted(os.listdir(base_dir)):
 		if filename.endswith('.jpg'):
-			if filename not in img_labels.keys():
+			if filename not in class_labels.keys() or filename not in nation_labels.keys() or filename not in date_labels.keys():
 				os.remove(os.path.join(base_dir, filename))
 			else:
 				im = Image.open(os.path.join(base_dir, filename))
 				if(im.mode != 'RGB'):
 					os.remove(os.path.join(base_dir, filename))
+
 
 def process_images(base_dir, size):
 	"""
@@ -85,10 +87,10 @@ def process_images(base_dir, size):
 	print(idx)
 	return X_color, X_gray
 
-def read_labels(filenames):
+def read_labels(label_mapping, filename):
 
 	
-	unique_labels = list(set(img_labels.values()))
+	unique_labels = list(set(label_mapping.values()))
 	
 	class_labels = {} #map of class label to assocaited integer value
 	for i in range(len(unique_labels)):
@@ -96,7 +98,7 @@ def read_labels(filenames):
 
 
 	#write class labels for future use
-	w = csv.writer(open("class_labels.csv", "w"))
+	w = csv.writer(open(filename + ".csv", "w"))
 	for key, val in class_labels.items():
 		w.writerow([key, val])
 
@@ -107,14 +109,14 @@ def read_labels(filenames):
 	i = 0
 	images = sorted(processed_img)
 	for img in images:
-		label = img_labels[img]
+		label = label_mapping[img]
 		y[i] = class_labels[label]
 		i += 1
 
 	return y
 	
 
-def write_dataset(X_color, X_gray, y_nation):
+def write_dataset(X_color, X_gray, y_class, y_nation, y_date):
 	"""
 	Write out design matrices to h5py format.
 	To read:
@@ -136,21 +138,23 @@ def write_dataset(X_color, X_gray, y_nation):
 	h5f = h5py.File('artwork.h5', 'w')
 	h5f.create_dataset('color', data=X_color)
 	h5f.create_dataset('gray', data=X_gray)
-	h5f.create_dataset('labels', data=y_nation)
+	h5f.create_dataset('class', data=y_class)
+	h5f.create_dataset('nation', data=y_nation)
+	h5f.create_dataset('date', data=y_date)
 	h5f.close()
 
 
 
 def main():
 
-	if len(sys.argv) < 2:
-		print('error: requires at least one dataset')
-		sys.exit(0)
+	#if len(sys.argv) < 2:
+	#	print('error: requires at least one dataset')
+	#	sys.exit(0)
 
 
 	#resized image dimensions
 	#TODO: square okay?
-	size = 128, 128
+	size = 64, 64
 
 	#base directory
 	base_dir = "images/"
@@ -159,11 +163,16 @@ def main():
 		filenames.append(sys.argv[i])
 
 
-	label_mapping(filenames)
+
+	label_mapping('moma_class', class_labels)
+	label_mapping('moma_nation', nation_labels)
+	label_mapping('moma_date', date_labels)
 	clean_imgs(base_dir)
 	X_color, X_gray = process_images(base_dir, size)
-	y = read_labels(filenames)
-	write_dataset(X_color, X_gray, y)
+	y_class = read_labels(class_labels, 'class_labels')
+	y_nation = read_labels(nation_labels, 'nation_labels')
+	y_date = read_labels(date_labels, 'date_labels')
+	write_dataset(X_color, X_gray, y_class, y_nation, y_date)
 
 
 if __name__ == '__main__':

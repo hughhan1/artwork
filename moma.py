@@ -162,9 +162,9 @@ def get_images(artworks_filename):
         object_id      = artwork['ObjectID']
         classification = artwork['Classification']
         nation         = artwork['Nationality']
-        year           = artwork['Date']
+        date           = artwork['Date']
 
-        if url is not None classification is not None and len(nation) != 0 and date is not None:
+        if url is not None and classification is not None and len(nation) != 0 and date is not None:
             if classification in class_check and date in date_check and nation[0] in nation_check:
             
                 image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'

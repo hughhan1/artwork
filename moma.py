@@ -24,6 +24,52 @@ padding       = 6
 max_imgs = 100000 #TODO: pass as argument
 
 
+nation_check = [
+    'Argentine',
+    'Belgian',
+    'French',
+    'Canadian',
+    'Italian',
+    'German',
+    'Austrian',
+    'Brazilian',
+    'Russian',
+    'American',
+    'Czech',
+    'Dutch',
+    'Colombian',
+    'British',
+    'Swiss',
+    'Mexican',
+    'Japanese',
+    'Spanish'
+]
+
+class_check = [
+    'Print',
+    'Painting',
+    'Illustrated Book',
+    'Design',
+    'Photograph',
+    'Installation',
+    'Architecture',
+    'Sculpture',
+    'Drawing',
+    'Video',
+    'Periodical',
+    'Film'
+]
+
+date_check = [
+'2007','1930','2011','1991','1990','1993','1992','1995','1994','1997','1996',
+'1999','1998','1979','1978','1977','1976','1975','1972','1971','1970','1954',
+'1957','1956','1951','1950','1953','1959','1958','1933','1932','1931','1937',
+'1934','1938','2002','2003','2000','2001','2004','2005','2008','2009','1924',
+'1986','1987','1984','1985','1982','1983','1980','1981','1988','1989','1974',
+'1973','1968','1969','1964','1965','1966','1967','1960','1961','1962','1963',
+'1948','1949','1947','1921','1923','1925','1926','1927','1928','1929', '2006',
+]
+
 def make_soup(url):
     """
     Instantiates and returns a BeautifulSoup instance using the URL provided in
@@ -107,32 +153,29 @@ def get_images(artworks_filename):
     artworks_data = json.load(artworks_file)
 
     classification_labels = {}
+    nation_labels = {}
+    date_labels = {}
     i = 0
-    for artwork in artworks_data[:max_imgs]:
-
-        if i % 350 != 0:
-            i += 1
-            continue
-        else:
-            i += 1
+    for artwork in artworks_data:
 
         url            = artwork['URL']
         object_id      = artwork['ObjectID']
-        classification = 'MoMA ' + artwork['Classification']
+        classification = artwork['Classification']
+        nation         = artwork['Nationality']
+        year           = artwork['Date']
 
-        check = [
-            'MoMA Design',
-            'MoMA Drawing', 
-            'MoMA Painting'
-            'MoMA Photograph',
-        ]
+        if url is not None classification is not None and len(nation) != 0 and date is not None:
+            if classification in class_check and date in date_check and nation[0] in nation_check:
+            
+                image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
+                get_image(url, image_filename)
+                classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
+                nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
+                date_labels['moma_' + str(object_id).zfill(padding)]  = date
 
-        if url is not None and classification in check:
-            image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
-            get_image(url, image_filename)
-            classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
-    
-    write_labels(classification_labels, "moma.csv")
+    write_labels(classification_labels, "moma_class.csv")
+    write_labels(nation_labels, "moma_nation.csv")
+    write_labels(date_labels, "moma_date.csv")
     artworks_file.close()
 
 
@@ -192,3 +235,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

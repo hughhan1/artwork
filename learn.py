@@ -12,18 +12,16 @@ from sklearn.metrics import confusion_matrix
 h5f = h5py.File('artwork.h5','r')
 
 
+
 X = h5f['color'][:]
 #X_gray  = h5f['gray'][:]
-y = h5f['labels'][:]
+y = h5f['class'][:]
 h5f.close()
 
-# N is the number of images in the images/ directory.
-N = len([f for f in os.listdir('images/') if f.endswith('.jpg')])
+# N number of samples
+N = X.shape[0]
 
-
-print(X.shape)
-print(N)
-idx = np.random.choice(1806, 1806, replace=False) #shuffle data
+idx = np.random.choice(N, N, replace=False) #shuffle data
 X = X[idx, :]
 y = y[idx]
 
@@ -33,8 +31,8 @@ for n in set(labels):
 	print(str(n) + ": " + str(labels.count(n)))
 
 
-split = 3
-kf = KFold(n_splits=split) #leave-one-out: n_splits = N-1
+split = N-1
+kf = KFold(n_splits=split) #leave-one-out: n_splits S= N-1
 
 total = 0
 for train_index, test_index in kf.split(X):
@@ -50,10 +48,14 @@ for train_index, test_index in kf.split(X):
 
 print('Average acc: ' + str(total / split))
 
+
+
+
+# Manual Test, if interested 
 '''
 svm = OneVsRestClassifier(LinearSVC(random_state=0)).fit(X, y)
 
-size = 128, 128
+size = 64, 64
 im = Image.open(os.path.join("", "test.jpg"))
 im = im.resize(size, Image.ANTIALIAS)
 

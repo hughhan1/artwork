@@ -152,9 +152,9 @@ def get_images(artworks_filename):
     artworks_file = open(artworks_filename)
     artworks_data = json.load(artworks_file)
 
-    classification_labels = {}
-    nation_labels = {}
-    date_labels = {}
+    #classification_labels = {}
+    #nation_labels = {}
+    #date_labels = {}
     i = 0
     for artwork in artworks_data:
 
@@ -169,13 +169,13 @@ def get_images(artworks_filename):
             
                 image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
                 get_image(url, image_filename)
-                classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
-                nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
-                date_labels['moma_' + str(object_id).zfill(padding)]  = date
+                #classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
+                #nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
+                #date_labels['moma_' + str(object_id).zfill(padding)]  = date
 
-    write_labels(classification_labels, "moma_class.csv")
-    write_labels(nation_labels, "moma_nation.csv")
-    write_labels(date_labels, "moma_date.csv")
+    #write_labels(classification_labels, "moma_class.csv")
+    #write_labels(nation_labels, "moma_nation.csv")
+    #write_labels(date_labels, "moma_date.csv")
     artworks_file.close()
 
 

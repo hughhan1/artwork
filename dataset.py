@@ -44,7 +44,7 @@ def load_train(train_path, image_size, classes):
     ids = []
     cls = []
     training_dict = {}
-    print('Reading training images')
+    #print('Reading training images')
     #for fld in classes:   # assuming data directory has a separate folder for each class, and that each folder is named after the class
     #    index = classes.index(fld)
     #    print('Loading {} files (Index: {})'.format(fld, index))
@@ -60,7 +60,7 @@ def load_train(train_path, image_size, classes):
             training_dict[line.split(',')[0]] = line.split(',')[1].rstrip()
         for fl in files:
             try:
-                print('Processing training set image: ' + fl)
+                #print('Processing training set image: ' + fl)
                 image = cv2.imread('images/' + fl + '.jpg')
                 image = cv2.resize(image, (image_size, image_size), cv2.INTER_LINEAR)
                 images.append(image)
@@ -93,26 +93,26 @@ def load_test(test_path, image_size,classes):
     #for class_name in classes:
     #    path = os.path.join(test_path,class_name, '*g')
     #    files = sorted(glob.glob(path))
-    for class_name in classes:
-        X_test = []
-        X_test_id = []
-        print("Reading test images")
-        #for fl in files:
-            #flbase = os.path.basename(fl)
-            #print(fl)
-        for f1 in test_dict:
-            try:
-                print("Processing test image: " + f1)
-                img = cv2.imread('images/' + f1 + '.jpg')
-                img = cv2.resize(img, (image_size, image_size), cv2.INTER_LINEAR)
-                X_test.append(img)
-                X_test_id.append(test_dict[f1])
-            except IOError:
-                continue
+    #for class_name in classes:
+    X_test = []
+    X_test_id = []
+    #print("Reading test images")
+    #for fl in files:
+        #flbase = os.path.basename(fl)
+         #print(fl)
+    for f1 in test_dict:
+        try:
+            #print("Processing test image: " + f1)
+            img = cv2.imread('images/' + f1 + '.jpg')
+            img = cv2.resize(img, (image_size, image_size), cv2.INTER_LINEAR)
+            X_test.append(img)
+            X_test_id.append(test_dict[f1])
+        except IOError:
+            continue
   ### because we're not creating a DataSet object for the test images, normalization happens here
-        X_test = np.array(X_test, dtype=np.uint8)
-        X_test = X_test.astype('float32')
-        X_test = X_test / 255
+    X_test = np.array(X_test, dtype=np.uint8)
+    X_test = X_test.astype('float32')
+    X_test = X_test / 255
 
     return X_test, X_test_id
 

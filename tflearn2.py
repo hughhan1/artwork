@@ -1,4 +1,4 @@
-
+#!usr/bin/env python
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import pandas as pd
@@ -47,6 +47,14 @@ classes = ['Photograph', 'Installation', 'Sculpture',
 #classes = ['Russian', 'Spanish', 'Mexican', 'Canadian', 'German', 'Brazilian', 'Japanese', 'French', 'Czech',
 #        'American', 'British', 'Dutch', 'Swiss', 'Austrian', 'Italian', 'Colombian', 'Argentine', 'Belgian']
 
+#classes = ['1976', '2003', '1954', '1961', '1921', '1923', '1924', '1962', '1926', '1927', '1928', '1929',
+#    '1989', '1986', '1987', '1984', '1949', '1982', '1969', '1980', '1981', '1964', '1965', '1966', '1967',
+#    '1960', '1947', '1988', '1963', '2001', '1985', '2011', '2004', '1978', '2005', '1948', '1933', '1932',
+#    '1931', '1956', '1937', '1950', '1953', '1934', '1968', '1938', '1959', '1958', '1991', '1990', '1993',
+#    '1992', '1995', '1994', '1997', '1996', '1977', '1998', '1975', '1974', '1973', '1972', '1971', '1970',
+#    '2000', '1930', '2002', '1999', '2006', '2007', '1957', '1979', '1951', '2008', '2009', '1925', '1983']
+
+
 num_classes = len(classes)
 
 # batch size
@@ -63,12 +71,15 @@ early_stopping = None  # use None if you don't want to implement early stoping
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
+#config.log_device_placement=True
+config.intra_op_parallelism_threads = 2
 session = tf.Session(config=config)
 train_path='training_data'
 test_path='testing_data'
 
 dataset.partition_train_test('moma_class.csv', 0.75)
 #dataset.partition_train_test('moma_nation.csv', 0.75)
+#dataset.partition_train_test('moma_date.csv', 0.75)
 
 print('=====Reading Training Sets=====')
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
@@ -252,6 +263,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(cost)
 correct_prediction = tf.equal(y_pred_cls, y_true_cls)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+
 session.run(tf.global_variables_initializer()) # for newer versions
 #session.run(tf.initialize_all_variables()) # for older versions
 train_batch_size = batch_size
@@ -262,8 +274,8 @@ def print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
     val_acc = session.run(accuracy, feed_dict=feed_dict_validate)
     msg = "Epoch {0} --- Training Accuracy: {1:>6.1%}, Validation Accuracy: {2:>6.1%}, Validation Loss: {3:.3f}"
     print(msg.format(epoch + 1, acc, val_acc, val_loss))
-    with session.as_default():
-        print(sklearn.metrics.confusion_matrix(y_true.eval(), y_pred.eval()))
+    #with session.as_default():
+    #    print(sklearn.metrics.confusion_matrix(y_true.eval(), y_pred.eval()))
     #print("f1_score: %f", sklearn.metrics.f1_score(y_true_cls, y_pred_cls))
     end_time = time.time()
     print("Time elapsed: %d" % (end_time - start_time))
@@ -316,4 +328,4 @@ def optimize(num_iterations):
 
     
 optimize(num_iterations=3000)
-#print_validation_accuracy()
+print_validation_accuracy()

@@ -11,8 +11,11 @@ from urllib2 import urlopen
 import csv
 import json
 import os
+import re
 import socket
 import sys
+
+from interval import Interval
 
 
 image_dir     = 'images'
@@ -152,9 +155,11 @@ def get_images(artworks_filename):
     artworks_file = open(artworks_filename)
     artworks_data = json.load(artworks_file)
 
-    #classification_labels = {}
-    #nation_labels = {}
-    #date_labels = {}
+    classification_labels = {}
+    nation_labels = {}
+    date_labels = {}
+    start_date_labels = {}
+    end_date_labels = {}
     i = 0
     for artwork in artworks_data:
 
@@ -164,18 +169,29 @@ def get_images(artworks_filename):
         nation         = artwork['Nationality']
         date           = artwork['Date']
 
+        start_date, end_date = process_date(date)
+
+        # continue
+
         if url is not None and classification is not None and len(nation) != 0 and date is not None:
             if classification in class_check and date in date_check and nation[0] in nation_check:
             
                 image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
-                get_image(url, image_filename)
-                #classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
-                #nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
-                #date_labels['moma_' + str(object_id).zfill(padding)]  = date
+                # get_image(url, image_filename)
+                classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
+                nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
+                date_labels['moma_' + str(object_id).zfill(padding)]  = date
 
-    #write_labels(classification_labels, "moma_class.csv")
-    #write_labels(nation_labels, "moma_nation.csv")
-    #write_labels(date_labels, "moma_date.csv")
+                if start_date is not None:
+                    start_date_labels['moma_' + str(object_id).zfill(padding)] = Interval.range_str(start_date)
+                if end_date is not None:
+                    end_date_labels['moma_' + str(object_id).zfill(padding)]  = Interval.range_str(end_date)
+
+    write_labels(classification_labels, "moma_class.csv")
+    write_labels(nation_labels, "moma_nation.csv")
+    write_labels(date_labels, "moma_date.csv")
+    write_labels(start_date_labels, "moma_start_date.csv")
+    write_labels(end_date_labels, "moma_end_date.csv")
     artworks_file.close()
 
 
@@ -196,6 +212,58 @@ def get_thumbnails(artworks_filename):
         get_thumbnail(url, str(object_id).zfill(padding) + '.jpg')
     
     artworks_file.close()
+
+
+def process_date(date):
+
+    deletions = [
+        'c.', 'arranged', 'published', 'fabricated', 'released', 'printed',
+        'assembled', 'performed', '(', ')', 'January', 'February', 'March',
+        'April', 'May', 'June', 'July', 'August', 'September', 'November',
+        'December', 'spring', 'summer', 'fall', 'winter', 'late', 'or', 'n.d.',
+    ]
+
+    if date is None:
+        return None, None
+    
+    date = ''.join(date.split())
+    for deletion in deletions:
+        date = date.replace(deletion, '')
+
+    dates = re.split(',|-', date)
+    start_date = dates[0]
+
+    if len(dates) > 1:
+        if len(dates[1]) == 4:
+            end_date = dates[1]
+        elif len(dates[1]) == 2:
+            end_date = start_date[0:2] + date[1]
+        elif dates[1] == 'present' or dates[1] == 'ongoing':
+            end_date = '2017'
+        else:
+            end_date = None
+    else:
+        end_date = None
+    
+    try:
+        start_date = int(start_date)
+        if start_date < 1500 or start_date > 2017:
+            start_date = None
+    except ValueError:
+        start_date = None
+    except TypeError:
+        start_date = None
+    
+    try:
+        end_date = int(end_date)
+        if end_date < 1500 or end_date > 2017:
+            end_date = None
+    except ValueError:
+        end_date = None
+    except TypeError:
+        end_date = None
+
+    return start_date, end_date
 
 
 def write_labels(labels_map, filename):

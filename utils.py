@@ -28,14 +28,15 @@ def clean_imgs(base_dir):
 	Deletes any images from directory that are unusable -
 	ie are not RGB, do not have label
 	"""
+
 	for filename in sorted(os.listdir(base_dir)):
 		if filename.endswith('.jpg'):
 			if filename not in class_labels.keys() or filename not in nation_labels.keys() or filename not in date_labels.keys():
-				os.remove(os.path.join(base_dir, filename))
+				os.rename(os.path.join(base_dir, filename), os.path.join(base_dir+'faulty/', filename))
 			else:
 				im = Image.open(os.path.join(base_dir, filename))
 				if(im.mode != 'RGB'):
-					os.remove(os.path.join(base_dir, filename))
+					os.rename(os.path.join(base_dir, filename), os.path.join(base_dir+'faulty/', filename))
 
 
 def process_images(base_dir, size):
@@ -158,6 +159,8 @@ def main():
 
 	#base directory
 	base_dir = "images/"
+
+	#if using multiple datasets, not used for now
 	filenames = []
 	for i in range(1, len(sys.argv)):
 		filenames.append(sys.argv[i])
@@ -172,6 +175,12 @@ def main():
 	y_class = read_labels(class_labels, 'class_labels')
 	y_nation = read_labels(nation_labels, 'nation_labels')
 	y_date = read_labels(date_labels, 'date_labels')
+
+	print(X_color.shape)
+	print(X_gray.shape)
+	print(y_class.shape)
+	print(y_nation.shape)
+	print(y_date.shape)
 	write_dataset(X_color, X_gray, y_class, y_nation, y_date)
 
 

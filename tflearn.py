@@ -192,14 +192,25 @@ def new_fc_layer(
 
     return layer
 
+def get_confusion_matrix(feed_dict_train, feed_dict_validate):
+
+    predictions = session.run(y_pred_cls, feed_dict=feed_dict_validate)
+    true        = session.run(y_true_cls, feed_dict=feed_dict_validate)
+
+    # print("predicted: {0}".format(predictions))
+    # print("true: {0}".format(true))
+
+    return sklearn.metrics.confusion_matrix(
+        y_true=true, 
+        y_pred=predictions, 
+        labels=list(range(len(classes)))
+    )
+
 def print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
 
     # First, calculate the accuracy on the training set and the validation set.
     acc     = session.run(accuracy, feed_dict=feed_dict_train)
     val_acc = session.run(accuracy, feed_dict=feed_dict_validate)
-
-    predictions = session.run(y_pred_cls, feed_dict=feed_dict_validate)
-    true        = session.run(y_true_cls, feed_dict=feed_dict_validate)
 
     # Print the training and validation accuracy.
     print(
@@ -209,19 +220,7 @@ def print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
         .format(epoch + 1, acc, val_acc, val_loss)
     )
 
-    print("predicted: {0}".format(predictions))
-    print("true: {0}".format(true))
-
-    # tf.confusion_matrix(true, predictions)
-    print(sklearn.metrics.confusion_matrix(
-        y_true=true, 
-        y_pred=predictions, 
-        labels=list(range(len(classes)))
-    ))
-
-    # with session.as_default():
-    #    print(sklearn.metrics.confusion_matrix(true, predictions))
-    # print("f1_score: %f", sklearn.metrics.f1_score(y_true_cls, y_pred_cls))
+    print(get_confusion_matrix(feed_dict_train, feed_dict_validate))
 
     end_time = time.time()
     print("Time elapsed: %d" % (end_time - start_time))
@@ -231,6 +230,9 @@ def optimize(num_iterations):
     global total_iterations
 
     best_val_loss = float("inf")
+
+    # First, initialize a confusion matrix of 0s.
+    confusion_matrix = np.zeros((num_classes, num_classes))
 
     for i in range(total_iterations, total_iterations + num_iterations):
 
@@ -256,6 +258,9 @@ def optimize(num_iterations):
         # TensorFlow assigns the variables in feed_dict_train
         # to the placeholder variables and then runs the optimizer.
         session.run(optimizer, feed_dict=feed_dict_train)
+
+        # Get the confusion matrix for the current batch, and add it to the total.
+        confusion_matrix += get_confusion_matrix(feed_dict_train, feed_dict_validate)
         
         # Print status at end of each epoch (defined as full pass through training dataset).
         if i % int(data.train.num_examples/batch_size) == 0: 
@@ -263,6 +268,9 @@ def optimize(num_iterations):
             epoch = int(i / int(data.train.num_examples/batch_size))
             
             print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss)
+
+    # Print the confusion matrix for the entire dataset.
+    print(confusion_matrix)
 
     # Update the total number of iterations performed.
     total_iterations += num_iterations

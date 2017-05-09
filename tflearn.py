@@ -11,7 +11,10 @@ from datetime import timedelta
 import math
 import dataset
 import random
+import os
     
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 # Convolutional Layer 1.
 filter_size1 = 3 
 num_filters1 = 32
@@ -72,45 +75,21 @@ early_stopping = None  # use None if you don't want to implement early stoping
 
 #tf.train.ClusterSpec({"local":["localhost:2222", "localhost:2222", "localhost:2222", "localhost:2222"]})
 
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-config.log_device_placement=True
-config.intra_op_parallelism_threads = 16
-session = tf.Session(config=config)
-train_path='training_data'
-test_path='testing_data'
-
-dataset.partition_train_test('moma_class.csv', 0.75)
-#dataset.partition_train_test('moma_nation.csv', 0.75)
-#dataset.partition_train_test('moma_date.csv', 0.75)
-#dataset.partition_train_test('moma_start_date.csv', 0.75)
-
-print('=====Reading Training Sets=====')
-data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
-print('=====Reading Test Sets=====')
-test_images, test_ids = dataset.read_test_set(test_path, img_size,classes)
-
-print("Size of:")
-print("- Training-set:\t\t{}".format(len(data.train.labels)))
-print("- Test-set:\t\t{}".format(len(test_images)))
-print("- Validation-set:\t{}".format(len(data.valid.labels)))
-
-start_time = time.time()
-
 def new_weights(shape):
     return tf.Variable(tf.truncated_normal(shape, stddev=0.05))
+
 
 def new_biases(length):
     return tf.Variable(tf.constant(0.05, shape=[length]))
 
 
-
-def new_conv_layer(input,              # The previous layer.
-               num_input_channels, # Num. channels in prev. layer.
-               filter_size,        # Width and height of each filter.
-               num_filters,        # Number of filters.
-               use_pooling=True):  # Use 2x2 max-pooling.
-
+def new_conv_layer(
+    input,               # The previous layer.
+    num_input_channels,  # Num. channels in prev. layer.
+    filter_size,         # Width and height of each filter.
+    num_filters,         # Number of filters.
+    use_pooling=True     # Use 2x2 max-pooling.
+):
     # Shape of the filter-weights for the convolution.
     # This format is determined by the TensorFlow API.
     shape = [filter_size, filter_size, num_input_channels, num_filters]
@@ -130,10 +109,12 @@ def new_conv_layer(input,              # The previous layer.
     # is moved 2 pixels across the x- and y-axis of the image.
     # The padding is set to 'SAME' which means the input image
     # is padded with zeroes so the size of the output is the same.
-    layer = tf.nn.conv2d(input=input,
-                     filter=weights,
-                     strides=[1, 1, 1, 1],
-                     padding='SAME')
+    layer = tf.nn.conv2d(
+        input=input,
+        filter=weights,
+        strides=[1, 1, 1, 1],
+        padding='SAME'
+    )
 
     # Add the biases to the results of the convolution.
     # A bias-value is added to each filter-channel.
@@ -144,10 +125,12 @@ def new_conv_layer(input,              # The previous layer.
         # This is 2x2 max-pooling, which means that we
         # consider 2x2 windows and select the largest value
         # in each window. Then we move 2 pixels to the next window.
-        layer = tf.nn.max_pool(value=layer,
-                               ksize=[1, 2, 2, 1],
-                               strides=[1, 2, 2, 1],
-                               padding='SAME')
+        layer = tf.nn.max_pool(
+            value=layer,
+            ksize=[1, 2, 2, 1],
+            strides=[1, 2, 2, 1],
+            padding='SAME'
+        )
 
     # Rectified Linear Unit (ReLU).
     # It calculates max(x, 0) for each input pixel x.
@@ -162,8 +145,6 @@ def new_conv_layer(input,              # The previous layer.
     # We return both the resulting layer and the filter-weights
     # because we will plot the weights later.
     return layer, weights
-
-    
 
 def flatten_layer(layer):
     # Get the shape of the input layer.
@@ -190,10 +171,12 @@ def flatten_layer(layer):
     return layer_flat, num_features
 
 
-def new_fc_layer(input,          # The previous layer.
-             num_inputs,     # Num. inputs from prev. layer.
-             num_outputs,    # Num. outputs.
-             use_relu=True): # Use Rectified Linear Unit (ReLU)?
+def new_fc_layer(
+    input,          # The previous layer.
+    num_inputs,     # Num. inputs from prev. layer.
+    num_outputs,    # Num. outputs.
+    use_relu=True   # Use Rectified Linear Unit (ReLU)?
+):
 
     # Create new weights and biases.
     weights = new_weights(shape=[num_inputs, num_outputs])
@@ -209,14 +192,112 @@ def new_fc_layer(input,          # The previous layer.
 
     return layer
 
+def print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
+
+    # First, calculate the accuracy on the training set and the validation set.
+    acc     = session.run(accuracy, feed_dict=feed_dict_train)
+    val_acc = session.run(accuracy, feed_dict=feed_dict_validate)
+
+    predictions = session.run(y_pred_cls, feed_dict=feed_dict_validate)
+    true        = session.run(y_true_cls, feed_dict=feed_dict_validate)
+
+    # Print the training and validation accuracy.
+    print(
+        "Epoch {0} --- Training Accuracy: {1:>6.1%}, "
+        "Validation Accuracy: {2:>6.1%}, "
+        "Validation Loss: {3:.3f}"
+        .format(epoch + 1, acc, val_acc, val_loss)
+    )
+
+    print("predicted: {0}".format(predictions))
+    print("true: {0}".format(true))
+
+    # tf.confusion_matrix(true, predictions)
+    print(sklearn.metrics.confusion_matrix(
+        y_true=true, 
+        y_pred=predictions, 
+        labels=list(range(len(classes)))
+    ))
+
+    # with session.as_default():
+    #    print(sklearn.metrics.confusion_matrix(true, predictions))
+    # print("f1_score: %f", sklearn.metrics.f1_score(y_true_cls, y_pred_cls))
+
+    end_time = time.time()
+    print("Time elapsed: %d" % (end_time - start_time))
+
+def optimize(num_iterations):
+    # Ensure we update the global variable rather than a local copy.
+    global total_iterations
+
+    best_val_loss = float("inf")
+
+    for i in range(total_iterations, total_iterations + num_iterations):
+
+        # Get a batch of training examples.
+        # x_batch now holds a batch of images and
+        # y_true_batch are the true labels for those images.
+        x_batch, y_true_batch, _, cls_batch = data.train.next_batch(train_batch_size)
+        x_valid_batch, y_valid_batch, _, valid_cls_batch = data.valid.next_batch(train_batch_size)
+       
+        # Convert shape from [num examples, rows, columns, depth]
+        # to [num examples, flattened image shape]
+        x_batch = x_batch.reshape(train_batch_size, img_size_flat)
+        x_valid_batch = x_valid_batch.reshape(train_batch_size, img_size_flat)
+        # Put the batch into a dict with the proper names
+        # for placeholder variables in the TensorFlow graph.
+        feed_dict_train = {x: x_batch,
+                           y_true: y_true_batch}
+        
+        feed_dict_validate = {x: x_valid_batch,
+                              y_true: y_valid_batch}
+
+        # Run the optimizer using this batch of training data.
+        # TensorFlow assigns the variables in feed_dict_train
+        # to the placeholder variables and then runs the optimizer.
+        session.run(optimizer, feed_dict=feed_dict_train)
+        
+        # Print status at end of each epoch (defined as full pass through training dataset).
+        if i % int(data.train.num_examples/batch_size) == 0: 
+            val_loss = session.run(cost, feed_dict=feed_dict_validate)
+            epoch = int(i / int(data.train.num_examples/batch_size))
+            
+            print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss)
+
+    # Update the total number of iterations performed.
+    total_iterations += num_iterations
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+config.log_device_placement=True
+config.intra_op_parallelism_threads = 16
+session = tf.Session(config=config)
+train_path='training_data'
+test_path='testing_data'
+
+dataset.partition_train_test('moma_class.csv', 0.75)
+#dataset.partition_train_test('moma_nation.csv', 0.75)
+#dataset.partition_train_test('moma_date.csv', 0.75)
+#dataset.partition_train_test('moma_start_date.csv', 0.75)
+
+print('=====Reading Training Sets=====')
+data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
+print('=====Reading Test Sets=====')
+test_images, test_ids = dataset.read_test_set(test_path, img_size,classes)
+
+print("Size of:")
+print("- Training-set:\t\t{}".format(len(data.train.labels)))
+print("- Test-set:\t\t{}".format(len(test_images)))
+print("- Validation-set:\t{}".format(len(data.valid.labels)))
+
+start_time = time.time()
+
 #session = tf.Session()
 x = tf.placeholder(tf.float32, shape=[None, img_size_flat], name='x')
 x_image = tf.reshape(x, [-1, img_size, img_size, num_channels])
 
 y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
 y_true_cls = tf.argmax(y_true, dimension=1)
-
-
 
 layer_conv1, weights_conv1 = \
 new_conv_layer(input=x_image,
@@ -268,67 +349,15 @@ correct_prediction = tf.equal(y_pred_cls, y_true_cls)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
+# confusion_matrix = tf.confusion_matrix
+
 #session.run(tf.global_variables_initializer()) # for newer versions
 session.run(tf.initialize_all_variables()) # for older versions
+
+
 train_batch_size = batch_size
 
-def print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):
-    # Calculate the accuracy on the training-set.
-    acc = session.run(accuracy, feed_dict=feed_dict_train)
-    val_acc = session.run(accuracy, feed_dict=feed_dict_validate)
-    msg = "Epoch {0} --- Training Accuracy: {1:>6.1%}, Validation Accuracy: {2:>6.1%}, Validation Loss: {3:.3f}"
-    print(msg.format(epoch + 1, acc, val_acc, val_loss))
-    #with session.as_default():
-    #    print(sklearn.metrics.confusion_matrix(y_true.eval(), y_pred.eval()))
-    #print("f1_score: %f", sklearn.metrics.f1_score(y_true_cls, y_pred_cls))
-    end_time = time.time()
-    print("Time elapsed: %d" % (end_time - start_time))
-
 total_iterations = 0
-
-def optimize(num_iterations):
-    # Ensure we update the global variable rather than a local copy.
-    global total_iterations
-
-    best_val_loss = float("inf")
-
-    for i in range(total_iterations,
-                   total_iterations + num_iterations):
-
-        # Get a batch of training examples.
-        # x_batch now holds a batch of images and
-        # y_true_batch are the true labels for those images.
-        x_batch, y_true_batch, _, cls_batch = data.train.next_batch(train_batch_size)
-        x_valid_batch, y_valid_batch, _, valid_cls_batch = data.valid.next_batch(train_batch_size)
-       
-        # Convert shape from [num examples, rows, columns, depth]
-        # to [num examples, flattened image shape]
-        x_batch = x_batch.reshape(train_batch_size, img_size_flat)
-        x_valid_batch = x_valid_batch.reshape(train_batch_size, img_size_flat)
-        # Put the batch into a dict with the proper names
-        # for placeholder variables in the TensorFlow graph.
-        feed_dict_train = {x: x_batch,
-                           y_true: y_true_batch}
-        
-        feed_dict_validate = {x: x_valid_batch,
-                              y_true: y_valid_batch}
-
-        # Run the optimizer using this batch of training data.
-        # TensorFlow assigns the variables in feed_dict_train
-        # to the placeholder variables and then runs the optimizer.
-        session.run(optimizer, feed_dict=feed_dict_train)
-        
-
-        # Print status at end of each epoch (defined as full pass through training dataset).
-        if i % int(data.train.num_examples/batch_size) == 0: 
-            val_loss = session.run(cost, feed_dict=feed_dict_validate)
-            epoch = int(i / int(data.train.num_examples/batch_size))
-            
-            print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss)
-            
-
-    # Update the total number of iterations performed.
-    total_iterations += num_iterations
 
     
 optimize(num_iterations=3000)

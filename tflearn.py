@@ -75,23 +75,20 @@ early_stopping = None  # use None if you don't want to implement early stoping
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 config.log_device_placement=True
-config.intra_op_parallelism_threads = 1
+config.intra_op_parallelism_threads = 16
 session = tf.Session(config=config)
 train_path='training_data'
 test_path='testing_data'
 
-with tf.device('/gpu:0'):
-    dataset.partition_train_test('moma_class.csv', 0.75)
-    #dataset.partition_train_test('moma_nation.csv', 0.75)
-    #dataset.partition_train_test('moma_date.csv', 0.75)
-    #dataset.partition_train_test('moma_start_date.csv', 0.75)
+dataset.partition_train_test('moma_class.csv', 0.75)
+#dataset.partition_train_test('moma_nation.csv', 0.75)
+#dataset.partition_train_test('moma_date.csv', 0.75)
+#dataset.partition_train_test('moma_start_date.csv', 0.75)
 
 print('=====Reading Training Sets=====')
-with tf.device('/gpu:0'):
-    data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
+data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
 print('=====Reading Test Sets=====')
-with tf.device('/gpu:0'):
-    test_images, test_ids = dataset.read_test_set(test_path, img_size,classes)
+test_images, test_ids = dataset.read_test_set(test_path, img_size,classes)
 
 print("Size of:")
 print("- Training-set:\t\t{}".format(len(data.train.labels)))
@@ -271,8 +268,8 @@ correct_prediction = tf.equal(y_pred_cls, y_true_cls)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
-session.run(tf.global_variables_initializer()) # for newer versions
-#session.run(tf.initialize_all_variables()) # for older versions
+#session.run(tf.global_variables_initializer()) # for newer versions
+session.run(tf.initialize_all_variables()) # for older versions
 train_batch_size = batch_size
 
 def print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss):

@@ -232,7 +232,7 @@ def optimize(num_iterations):
     best_val_loss = float("inf")
 
     # First, initialize a confusion matrix of 0s.
-    confusion_matrix = np.zeros((num_classes, num_classes))
+    # confusion_matrix = np.zeros((num_classes, num_classes))
 
     for i in range(total_iterations, total_iterations + num_iterations):
 
@@ -254,13 +254,18 @@ def optimize(num_iterations):
         feed_dict_validate = {x: x_valid_batch,
                               y_true: y_valid_batch}
 
+        print(feed_dict_validate[x].shape)
+
         # Run the optimizer using this batch of training data.
         # TensorFlow assigns the variables in feed_dict_train
         # to the placeholder variables and then runs the optimizer.
         session.run(optimizer, feed_dict=feed_dict_train)
 
         # Get the confusion matrix for the current batch, and add it to the total.
-        confusion_matrix += get_confusion_matrix(feed_dict_train, feed_dict_validate)
+        confusion_matrix = get_confusion_matrix(feed_dict_train, feed_dict_validate)
+
+        # Print the confusion matrix for the current batch.
+        # print(confusion_matrix)
         
         # Print status at end of each epoch (defined as full pass through training dataset).
         if i % int(data.train.num_examples/batch_size) == 0: 
@@ -268,9 +273,6 @@ def optimize(num_iterations):
             epoch = int(i / int(data.train.num_examples/batch_size))
             
             print_progress(epoch, feed_dict_train, feed_dict_validate, val_loss)
-
-    # Print the confusion matrix for the entire dataset.
-    print(confusion_matrix)
 
     # Update the total number of iterations performed.
     total_iterations += num_iterations

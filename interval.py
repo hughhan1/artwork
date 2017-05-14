@@ -29,3 +29,7 @@ class Interval():
         """
         low, high = Interval.range(value)
         return str(low) + '-' + str(high)
+    
+    @staticmethod
+    def time_period(value):
+        return 'Modern' if value < 1946 else 'Contemporary'

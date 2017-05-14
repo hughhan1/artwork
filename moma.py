@@ -160,6 +160,8 @@ def get_images(artworks_filename):
     date_labels = {}
     start_date_labels = {}
     end_date_labels = {}
+    time_period_labels = {}
+
     i = 0
     for artwork in artworks_data:
 
@@ -171,27 +173,32 @@ def get_images(artworks_filename):
 
         start_date, end_date = process_date(date)
 
-        # continue
-
         if url is not None and classification is not None and len(nation) != 0 and date is not None:
             if classification in class_check and date in date_check and nation[0] in nation_check:
             
+                # Get the filename of the image using the Object ID of the image, and save the image
+                # to disk.
                 image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
                 # get_image(url, image_filename)
+
                 classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
                 nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
                 date_labels['moma_' + str(object_id).zfill(padding)]  = date
 
-                if start_date is not None:
-                    start_date_labels['moma_' + str(object_id).zfill(padding)] = Interval.range_str(start_date)
-                if end_date is not None:
-                    end_date_labels['moma_' + str(object_id).zfill(padding)]  = Interval.range_str(end_date)
+            if start_date is not None:
+                start_date_labels['moma_' + str(object_id).zfill(padding)] = Interval.range_str(start_date)
+            if end_date is not None:
+                end_date_labels['moma_' + str(object_id).zfill(padding)]  = Interval.range_str(end_date)
+            
+            if start_date is not None:
+                time_period_labels['moma_' + str(object_id).zfill(padding)] = Interval.time_period(start_date)
 
     write_labels(classification_labels, "moma_class.csv")
     write_labels(nation_labels, "moma_nation.csv")
     write_labels(date_labels, "moma_date.csv")
     write_labels(start_date_labels, "moma_start_date.csv")
     write_labels(end_date_labels, "moma_end_date.csv")
+    write_labels(time_period_labels, "moma_time_period.csv")
     artworks_file.close()
 
 

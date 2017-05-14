@@ -10,7 +10,9 @@ from itertools import chain
 
 class_labels = {}
 nation_labels = {}
-date_labels = {} #global so can be used elsewhere
+date_labels = {} 
+start_date_labels = {} 
+time_period_labels = {}
 processed_img = []
 
 def label_mapping(filename, label_map):
@@ -90,7 +92,6 @@ def process_images(base_dir, size):
 
 def read_labels(label_mapping, filename):
 
-	
 	unique_labels = list(set(label_mapping.values()))
 	
 	class_labels = {} #map of class label to assocaited integer value
@@ -117,7 +118,7 @@ def read_labels(label_mapping, filename):
 	return y
 	
 
-def write_dataset(X_color, X_gray, y_class, y_nation, y_date):
+def write_dataset(X_datasets, Y_datasets):
 	"""
 	Write out design matrices to h5py format.
 	To read:
@@ -127,23 +128,22 @@ def write_dataset(X_color, X_gray, y_class, y_nation, y_date):
 		h5f.close()
 
 	Args:
-		base_dir	: the base directory of images
-		size	 	: the desired size of output images
-
-	Returns:
-		X_color 	: design matrix of colored images
-		X_gray		: design matrix for grayscale
+		X_datasets  : a dictionary containing the names and data values for all
+					  X (feature vector) datasets
+		Y_datasets  : a dictionary containing the names and data values for all
+					  y (label) datasets
 	"""
 
 	#save to h5py file
 	h5f = h5py.File('artwork.h5', 'w')
-	h5f.create_dataset('color', data=X_color)
-	h5f.create_dataset('gray', data=X_gray)
-	h5f.create_dataset('class', data=y_class)
-	h5f.create_dataset('nation', data=y_nation)
-	h5f.create_dataset('date', data=y_date)
-	h5f.close()
 
+	for name, data in X_datasets.items():
+		h5f.create_dataset(name, data=data)
+	
+	for name, data in Y_datasets.items():
+		h5f.create_dataset(name, data=data)
+
+	h5f.close()
 
 
 def main():
@@ -165,23 +165,34 @@ def main():
 	for i in range(1, len(sys.argv)):
 		filenames.append(sys.argv[i])
 
-
-
 	label_mapping('moma_class', class_labels)
 	label_mapping('moma_nation', nation_labels)
 	label_mapping('moma_date', date_labels)
+	label_mapping('moma_start_date', start_date_labels)
+	label_mapping('moma_time_period', time_period_labels)
+
 	clean_imgs(base_dir)
+
 	X_color, X_gray = process_images(base_dir, size)
 	y_class = read_labels(class_labels, 'class_labels')
 	y_nation = read_labels(nation_labels, 'nation_labels')
 	y_date = read_labels(date_labels, 'date_labels')
+	y_start_date = read_labels(start_date_labels, 'start_date_labels')
+	y_time_period = read_labels(time_period_labels, 'time_period_labels')
 
-	print(X_color.shape)
-	print(X_gray.shape)
-	print(y_class.shape)
-	print(y_nation.shape)
-	print(y_date.shape)
-	write_dataset(X_color, X_gray, y_class, y_nation, y_date)
+	write_dataset(
+		{
+			'color' : X_color,
+			'gray'  : X_gray
+		},
+		{
+			'class'       : y_class,
+			'nation'      : y_nation,
+			'date'        : y_date,
+			'start_date'  : y_start_date,
+			'time_period' : y_time_period
+		}
+	)
 
 
 if __name__ == '__main__':

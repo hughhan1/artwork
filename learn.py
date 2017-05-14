@@ -15,7 +15,7 @@ h5f = h5py.File('artwork.h5','r')
 
 X = h5f['color'][:]
 #X_gray  = h5f['gray'][:]
-y = h5f['class'][:]
+y = h5f['time_period'][:]
 h5f.close()
 
 # N number of samples
@@ -31,7 +31,8 @@ for n in set(labels):
 	print(str(n) + ": " + str(labels.count(n)))
 
 
-split = N-1
+split = 4
+# split = N - 1
 kf = KFold(n_splits=split) #leave-one-out: n_splits S= N-1
 
 total = 0

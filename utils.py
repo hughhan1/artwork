@@ -39,7 +39,7 @@ def clean_imgs(base_dir):
 					os.rename(os.path.join(base_dir, filename), os.path.join(base_dir+'faulty/', filename))
 
 
-def process_images(base_dir, size):
+def process_images(base_dir, size, labels):
 	"""
 	Iterate through images in directory, resize to desired dimensions,
 	prepare design matrices.
@@ -64,7 +64,7 @@ def process_images(base_dir, size):
 	idx = 0
 	for filename in sorted(os.listdir(base_dir)):
 
-		if filename.endswith('.jpg'):
+		if filename.endswith('.jpg') and filename in labels.keys():
 			sys.stderr.write("Processing: %s\n" % filename)
 
 
@@ -117,7 +117,8 @@ def read_labels(label_mapping, filename):
 	return y
 	
 
-def write_dataset(X_color, X_gray, y_class, y_nation, y_date):
+def write_dataset(X_color_class, X_gray_class, X_color_nation, X_gray_nation,\
+	X_color_date, X_gray_date, y_class, y_nation, y_date):
 	"""
 	Write out design matrices to h5py format.
 	To read:
@@ -137,8 +138,13 @@ def write_dataset(X_color, X_gray, y_class, y_nation, y_date):
 
 	#save to h5py file
 	h5f = h5py.File('artwork.h5', 'w')
-	h5f.create_dataset('color', data=X_color)
-	h5f.create_dataset('gray', data=X_gray)
+	h5f.create_dataset('color_class', data=X_color_class)
+	h5f.create_dataset('gray_class', data=X_gray_class)
+	h5f.create_dataset('color_nation', data=X_color_nation)
+	h5f.create_dataset('gray_nation', data=X_gray_nation)
+	h5f.create_dataset('color_date', data=X_color_date)
+	h5f.create_dataset('gray_date', data=X_gray_date)
+
 	h5f.create_dataset('class', data=y_class)
 	h5f.create_dataset('nation', data=y_nation)
 	h5f.create_dataset('date', data=y_date)
@@ -161,27 +167,29 @@ def main():
 	base_dir = "images/"
 
 	#if using multiple datasets, not used for now
-	filenames = []
-	for i in range(1, len(sys.argv)):
-		filenames.append(sys.argv[i])
+	#filenames = []
+	#for i in range(1, len(sys.argv)):
+	#	filenames.append(sys.argv[i])
 
-
-
+ 
 	label_mapping('moma_class', class_labels)
 	label_mapping('moma_nation', nation_labels)
 	label_mapping('moma_date', date_labels)
 	clean_imgs(base_dir)
-	X_color, X_gray = process_images(base_dir, size)
+	X_color_class, X_gray_class = process_images(base_dir, size, class_labels)
+	X_color_nation, X_gray_nation = process_images(base_dir, size, nation_labels)
+	X_color_date, X_gray_date = process_images(base_dir, size, date_labels)
 	y_class = read_labels(class_labels, 'class_labels')
 	y_nation = read_labels(nation_labels, 'nation_labels')
 	y_date = read_labels(date_labels, 'date_labels')
 
-	print(X_color.shape)
-	print(X_gray.shape)
-	print(y_class.shape)
-	print(y_nation.shape)
-	print(y_date.shape)
-	write_dataset(X_color, X_gray, y_class, y_nation, y_date)
+	#print(X_color.shape)
+	#print(X_gray.shape)
+	#print(y_class.shape)
+	#print(y_nation.shape)
+	#print(y_date.shape)
+	write_dataset(X_color_class, X_gray_class, X_color_nation, X_gray_nation, \
+		X_color_date, X_gray_date, y_class, y_nation, y_date)
 
 
 if __name__ == '__main__':

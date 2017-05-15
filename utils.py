@@ -20,35 +20,14 @@ def intersect(a, b):
 	return list(set(a) & set(b))
 
 
-def label_mapping(filename):
+def label_mapping(filename, label_map):
 	"""
 	Creates mapping of filename to label from CSV
-
 	Args:
-		filename	: name of dataset CSV file
+		filenames	: the names of datasets to be used (moma, getty, etc)
 	"""
-
-	with open(filename, 'rb') as infile:
-		reader = csv.reader(infile)
-		next(reader, None) # ignore first line since they're column labels
-
-		#filename, artist, title, style, genre, date
-		for line in reader:
-			img = line[0]
-			artist = line[1]
-			style = line[3]
-			genre = line[4]
-			date = line[5]
-
-			#img and artist fields always present, no need to check
-			artist_labels[img] = artist
-
-			if style != '':
-				genre_labels[img] = genre
-			if genre != '':
-				genre_labels[img] = genre
-			if date != '':
-				date_labels[img] = date
+	for key, val in csv.reader(open(filename)):
+		label_map[key] = val
 
 #def clean_imgs(base_dir):
 #	"""
@@ -118,7 +97,7 @@ def process_images(base_dir, size, labels):
 	print(idx)
 	return X_color, X_gray
 
-def read_labels(label_mapping, filename):
+def read_labels(base_dir, label_mapping, filename):
 
 	
 	unique_labels = list(set(label_mapping.values()))
@@ -141,7 +120,7 @@ def read_labels(label_mapping, filename):
 
 
 	image_filenames = glob.glob1(base_dir, '*.jpg')
-	mapping_filenames = labels.keys()
+	mapping_filenames = label_mapping.keys()
 	dataset = intersect(image_filenames, mapping_filenames)
 
 	idx = 0
@@ -153,8 +132,8 @@ def read_labels(label_mapping, filename):
 	return y
 	
 
-def write_dataset(X_color_artist, X_gray_artist, X_color_genre, X_gray_genre,\
-	X_color_date, X_gray_date, y_artist, y_genre, y_date):
+def write_dataset(X_color_style, X_gray_style, X_color_genre, X_gray_genre,\
+	X_color_date, X_gray_date, y_style, y_genre, y_date):
 	"""
 	Write out design matrices to h5py format.
 	To read:
@@ -174,14 +153,14 @@ def write_dataset(X_color_artist, X_gray_artist, X_color_genre, X_gray_genre,\
 
 	#save to h5py file
 	h5f = h5py.File('artwork.h5', 'w')
-	h5f.create_dataset('color_artist', data=X_color_artist)
-	h5f.create_dataset('gray_artist', data=X_gray_artist)
+	h5f.create_dataset('color_artist', data=X_color_style)
+	h5f.create_dataset('gray_artist', data=X_gray_style)
 	h5f.create_dataset('color_genre', data=X_color_genre)
 	h5f.create_dataset('gray_genre', data=X_gray_genre)
 	h5f.create_dataset('color_date', data=X_color_date)
 	h5f.create_dataset('gray_date', data=X_gray_date)
 
-	h5f.create_dataset('artist', data=y_artist)
+	h5f.create_dataset('artist', data=y_style)
 	h5f.create_dataset('genre', data=y_genre)
 	h5f.create_dataset('date', data=y_date)
 	h5f.close()
@@ -197,19 +176,22 @@ def main():
 	#base directory
 	base_dir = "images/"
  
-	label_mapping('train_info.csv')
+	#label_mapping('train_artist.csv', artist_labels) #not sure if this will be useful
+	label_mapping('train_style.csv', style_labels)
+	label_mapping('train_genre.csv', genre_labels)
+	label_mapping('train_date.csv', date_labels)
 
 	
-	X_color_artist, X_gray_artist = process_images(base_dir, size, artist_labels)
+	X_color_style, X_gray_style = process_images(base_dir, size, style_labels)
 	X_color_genre, X_gray_genre = process_images(base_dir, size, genre_labels)
 	X_color_date, X_gray_date = process_images(base_dir, size, date_labels)
-	y_artist = read_labels(artist_labels, 'artist_labels')
-	y_genre = read_labels(genre_labels, 'genre_labels')
-	y_date = read_labels(date_labels, 'date_labels')
+	y_style= read_labels(base_dir, style_labels, 'labels_style')
+	y_genre = read_labels(base_dir, genre_labels, 'labels_genre')
+	y_date = read_labels(base_dir, date_labels, 'labels_date')
 
 
-	write_dataset(X_color_artist, X_gray_artist, X_color_genre, X_gray_genre, \
-		X_color_date, X_gray_date, y_artist, y_genre, y_date)
+	write_dataset(X_color_style, X_gray_style, X_color_genre, X_gray_genre, \
+		X_color_date, X_gray_date, y_style, y_genre, y_date)
 
 
 	print(set(genre_labels.values()))

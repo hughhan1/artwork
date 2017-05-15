@@ -104,13 +104,13 @@ def label_mapping(filename):
 
 
 			if style != '' and style in style_check:
-				if sum(x == style for x in style_labels.values()) < max_examples: # avoid imbalance
-					style_labels[img] = style
+				#if sum(x == style for x in style_labels.values()) < max_examples: # avoid imbalance
+				style_labels[img] = style
 
 
 			if genre != '' and genre in genre_check:
-				if sum(x == genre for x in genre_labels.values()) < max_examples:
-					genre_labels[img] = genre
+				#if sum(x == genre for x in genre_labels.values()) < max_examples:
+				genre_labels[img] = genre
 
 
 			if len(date) > 0:
@@ -119,8 +119,8 @@ def label_mapping(filename):
 				period = str(bucket) + '-' + str(bucket + (bucket_len - 1))
 
 				if period in date_check:
-					if sum(x == period for x in date_labels.values()) <= max_examples:
-						date_labels[img] =  period #parsed_date
+					#if sum(x == period for x in date_labels.values()) <= max_examples:
+					date_labels[img] =  period #parsed_date
 
 
 def label_stats(label_mapping):
@@ -161,7 +161,7 @@ def main():
 	label_stats(date_labels)
 	print('=================================================')
 	
-	write_labels('train_artist.csv', artist_labels)
+	#write_labels('train_artist.csv', artist_labels)
 	write_labels('train_style.csv', style_labels)
 	write_labels('train_genre.csv', genre_labels)
 	write_labels('train_date.csv', date_labels)

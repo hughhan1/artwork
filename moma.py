@@ -179,7 +179,7 @@ def get_images(artworks_filename):
                 # Get the filename of the image using the Object ID of the image, and save the image
                 # to disk.
                 image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
-                # get_image(url, image_filename)
+                get_image(url, image_filename)
 
                 classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
                 nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]

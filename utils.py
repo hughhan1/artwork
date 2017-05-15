@@ -11,7 +11,13 @@ from itertools import chain
 class_labels = {}
 nation_labels = {}
 date_labels = {} #global so can be used elsewhere
+
 processed_img = []
+
+
+def intersect(a, b):
+	return list(set(a) & set(b))
+
 
 def label_mapping(filename, label_map):
 	"""
@@ -35,7 +41,7 @@ def clean_imgs(base_dir):
 				os.rename(os.path.join(base_dir, filename), os.path.join(base_dir+'faulty/', filename))
 			else:
 				im = Image.open(os.path.join(base_dir, filename))
-				if(im.mode != 'RGB'):
+				if (im.mode != 'RGB'):
 					os.rename(os.path.join(base_dir, filename), os.path.join(base_dir+'faulty/', filename))
 
 
@@ -54,7 +60,13 @@ def process_images(base_dir, size, labels):
 	"""
 
 	#dimensions for design matrices
-	N = len(glob.glob1(base_dir, '*.jpg'))
+
+	image_filenames = glob.glob1(base_dir, '*.jpg')
+	mapping_filenames = labels.keys()
+
+	N = len(intersect(image_filenames, mapping_filenames))
+
+	# N = len(glob.glob1(base_dir, '*.jpg'))
 	d = (size[0] * size[1])
 
 	#design matrices, color stacks RBG
@@ -62,13 +74,17 @@ def process_images(base_dir, size, labels):
 	X_gray = np.zeros((N, d))
 
 	idx = 0
-	for filename in sorted(os.listdir(base_dir)):
 
-		if filename.endswith('.jpg') and filename in labels.keys():
+	# filenames = os.listdir(base_dir)
+
+	for filename, label in labels.items():
+
+		if filename in image_filenames:
+
 			sys.stderr.write("Processing: %s\n" % filename)
 
-
 			#load image and resize
+
 			im = Image.open(os.path.join(base_dir, filename))
 			im = im.resize(size, Image.ANTIALIAS)
 
@@ -77,12 +93,38 @@ def process_images(base_dir, size, labels):
 			gray_array = np.array(im.convert('L')).ravel()
 
 			#load 1-d vector into respective position
-			X_color[idx, :] = color_array.T
+
+			if (im.mode != 'RGB'):
+				X_color[idx, :] = np.repeat(color_array, 3).T
+			else:
+				X_color[idx, :] = color_array.T
 			X_gray[idx, :] = gray_array.T
 
 			processed_img.append(filename)
 
 			idx += 1
+
+	# for filename in sorted(os.listdir(base_dir)):
+
+	# 	if filename.endswith('.jpg') and filename in labels.keys():
+	# 		sys.stderr.write("Processing: %s\n" % filename)
+
+
+	# 		#load image and resize
+	# 		im = Image.open(os.path.join(base_dir, filename))
+	# 		im = im.resize(size, Image.ANTIALIAS)
+
+	# 		#reshape to 1-d vector (and convert to grayscale)
+	# 		color_array = np.array(im).ravel()
+	# 		gray_array = np.array(im.convert('L')).ravel()
+
+	# 		#load 1-d vector into respective position
+	# 		X_color[idx, :] = color_array.T
+	# 		X_gray[idx, :] = gray_array.T
+
+	# 		processed_img.append(filename)
+
+	# 		idx += 1
 
 
 	print(idx)
@@ -175,7 +217,7 @@ def main():
 	label_mapping('moma_class', class_labels)
 	label_mapping('moma_nation', nation_labels)
 	label_mapping('moma_date', date_labels)
-	clean_imgs(base_dir)
+	# clean_imgs(base_dir)
 	X_color_class, X_gray_class = process_images(base_dir, size, class_labels)
 	X_color_nation, X_gray_nation = process_images(base_dir, size, nation_labels)
 	X_color_date, X_gray_date = process_images(base_dir, size, date_labels)

@@ -6,6 +6,9 @@ from PIL import Image
 
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
+from sklearn.ensemble import AdaBoostClassifier
+ 
 from sklearn.model_selection import KFold
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score

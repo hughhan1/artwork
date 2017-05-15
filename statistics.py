@@ -42,7 +42,9 @@ def label_mapping(filename):
 			if genre != '':
 				genre_labels[img] = genre
 			if len(date) > 0:
-				date_labels[img] = date[0] #parsed_date
+				bucket_len = 10 #buckets of 10 years
+				bucket = (int(date[0]) // bucket_len) * bucket_len 
+				date_labels[img] = str(bucket) + '-' + str(bucket + (bucket_len - 1)) #parsed_date
 
 
 def label_stats(label_mapping):
@@ -68,7 +70,11 @@ def main():
 	date_labels
 	'''
 	label_stats(style_labels)
+	print('=================================================')
 	label_stats(genre_labels)
+	print('=================================================')
+	label_stats(date_labels)
+	print('=================================================')
 
 if __name__ == '__main__':
 	main()

@@ -17,9 +17,9 @@ h5f = h5py.File('artwork.h5','r')
 
 
 
-X_color = h5f['color_nation'][:]
+X_color = h5f['color_style'][:]
 #X_gray  = h5f['gray'][:]
-y_label = h5f['nation'][:]
+y_label = h5f['style'][:]
 h5f.close()
 
 print(X_color.shape)

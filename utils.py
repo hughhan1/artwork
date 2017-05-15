@@ -153,14 +153,14 @@ def write_dataset(X_color_style, X_gray_style, X_color_genre, X_gray_genre,\
 
 	#save to h5py file
 	h5f = h5py.File('artwork.h5', 'w')
-	h5f.create_dataset('color_artist', data=X_color_style)
-	h5f.create_dataset('gray_artist', data=X_gray_style)
+	h5f.create_dataset('color_style', data=X_color_style)
+	h5f.create_dataset('gray_style', data=X_gray_style)
 	h5f.create_dataset('color_genre', data=X_color_genre)
 	h5f.create_dataset('gray_genre', data=X_gray_genre)
 	h5f.create_dataset('color_date', data=X_color_date)
 	h5f.create_dataset('gray_date', data=X_gray_date)
 
-	h5f.create_dataset('artist', data=y_style)
+	h5f.create_dataset('style', data=y_style)
 	h5f.create_dataset('genre', data=y_genre)
 	h5f.create_dataset('date', data=y_date)
 	h5f.close()

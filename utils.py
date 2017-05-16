@@ -122,7 +122,7 @@ def read_labels(base_dir, label_mapping, filename):
 	idx = 0
 	for img in sorted(dataset):
 		label = label_mapping[img]
-		y[i] = class_labels[label]
+		y[idx] = class_labels[label]
 		idx += 1
 
 	return y

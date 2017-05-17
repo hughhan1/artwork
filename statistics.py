@@ -56,7 +56,7 @@ style_check = [						#number of examples
 	#'Symbolism', 		 			#2626
 	#'Rococo', 		 				#2101
 	#'Northern Renaissance', 		 #1824
-	#'Naïve Art (Primitivism)', 		# 1776
+	#'Naive Art (Primitivism)', 		# 1776
 	#'Neoclassicism', 		 		#1622
 	#'Abstract Expressionism', 		 #1546
 	#'Cubism', 		 				#1316

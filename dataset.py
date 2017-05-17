@@ -15,14 +15,14 @@ def partition_train_test(fn,p):
       #print(len(lines))
       i=0
       for line in shuffle(lines):
-          if i % 40 == 0:
+          if i % 2 == 0:
             if random.random() > p:
                 #linesplit = line.split(',')
                 #print("Checking image: " + linesplit[0])
-                if os.path.isfile('images/' + line.split(',')[0] + '.jpg'):
+                if os.path.isfile('images/train/' + line.split(',')[0]):
                     test[line.split(',')[0]] = line.split(',')[1]
             else:
-                if os.path.isfile('images/' + line.split(',')[0] + '.jpg'):
+                if os.path.isfile('images/train/' + line.split(',')[0]):
                     training[line.split(',')[0]] = line.split(',')[1]
           i+=1
     with open('test_set.csv', 'w') as test_file:
@@ -51,6 +51,8 @@ def load_train(train_path, image_size, classes):
     #    path = os.path.join(train_path, fld, '*g')
     #    files = glob.glob(path)
     files = []
+    path = os.path.join('images/train/', '*.jpg')
+    fileglob = glob.glob(path)
     with open('training_set.csv', 'r') as training_file:
         lines = training_file.readlines()
         for line in lines:
@@ -58,19 +60,33 @@ def load_train(train_path, image_size, classes):
             ids.append(line.split(',')[0])
             cls.append(line.split(',')[1])
             training_dict[line.split(',')[0]] = line.split(',')[1].rstrip()
-        for fl in files:
+        #print(files)
+        totalLen = len(files)
+        print(totalLen)
+        i=0
+        for fl in sorted(files):
+            i += 1
             try:
                 #print('Processing training set image: ' + fl)
-                image = cv2.imread('images/' + fl + '.jpg')
-                image = cv2.resize(image, (image_size, image_size), cv2.INTER_LINEAR)
-                images.append(image)
-                label = np.zeros(len(classes))
-                index = classes.index(training_dict[fl])
-                label[index] = 1.0
-                labels.append(label)
-                flbase = os.path.basename(fl)
+                #print(fl[13:])
+                if fl in files:
+                  image = cv2.imread('images/train/'+fl)
+                  #print(str(((i/totalLen)*100))+'%')
+                  #print(fl[13:])
+                  print(str(i) + '/' + str(totalLen))
+                  image = cv2.resize(image, (image_size, image_size), cv2.INTER_LINEAR)
+                  images.append(image)
+                  label = np.zeros(len(classes))
+                  index = classes.index(training_dict[fl])
+                  label[index] = 1.0
+                  labels.append(label)
+                  flbase = os.path.basename(fl)
             except IOError:
                 continue
+            except cv2.error:
+                continue
+            #except cv2.error:
+            #    continue
             #ids.append(flbase)
             #cls.append(fld)
     images = np.array(images)
@@ -84,6 +100,8 @@ def load_train(train_path, image_size, classes):
 def load_test(test_path, image_size,classes):
     test_dict = {}
     classes = []
+    path = os.path.join('images/train/', '*g')
+    fileglob = glob.glob(path)
     with open('test_set.csv', 'r') as test_file:
         lines = test_file.readlines()
         for line in lines:
@@ -100,14 +118,22 @@ def load_test(test_path, image_size,classes):
     #for fl in files:
         #flbase = os.path.basename(fl)
          #print(fl)
+    totalLen = len(test_dict)
+    i = 0
     for f1 in test_dict:
+        i+=1
+        print(str(i) + '/' + str(totalLen))
         try:
             #print("Processing test image: " + f1)
-            img = cv2.imread('images/' + f1 + '.jpg')
-            img = cv2.resize(img, (image_size, image_size), cv2.INTER_LINEAR)
-            X_test.append(img)
-            X_test_id.append(test_dict[f1])
+            if f1 in test_dict:
+              img = cv2.imread('images/train/' + f1)
+              #print(f1)
+              img = cv2.resize(img, (image_size, image_size), cv2.INTER_LINEAR)
+              X_test.append(img)
+              X_test_id.append(test_dict[f1])
         except IOError:
+            continue
+        except cv2.error:
             continue
   ### because we're not creating a DataSet object for the test images, normalization happens here
     X_test = np.array(X_test, dtype=np.uint8)

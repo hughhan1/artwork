@@ -44,9 +44,9 @@ img_shape = (img_size, img_size)
 
 # class info
 
-classes = ['Photograph', 'Installation', 'Sculpture', 
-        'Illustrated Book', 'Design', 'Architecture', 
-        'Periodical', 'Print', 'Video', 'Painting', 'Drawing', 'Film']
+#classes = ['Photograph', 'Installation', 'Sculpture', 
+#        'Illustrated Book', 'Design', 'Architecture', 
+#        'Periodical', 'Print', 'Video', 'Painting', 'Drawing', 'Film']
 #classes = ['Russian', 'Spanish', 'Mexican', 'Canadian', 'German', 'Brazilian', 'Japanese', 'French', 'Czech',
 #        'American', 'British', 'Dutch', 'Swiss', 'Austrian', 'Italian', 'Colombian', 'Argentine', 'Belgian']
 
@@ -61,10 +61,15 @@ classes = ['Photograph', 'Installation', 'Sculpture',
 #     '1980-1980', '1920-1930', '1960-1960', '1990-1990', '1970-1970', '2010-2020', '2000-2010',
 #     '2000-2000', '1960-1970', '1980-1990', '1930-1940', '1950-1950']
 
+classes = [ 'Impressionism',                #8220
+    'Realism',                      #8112
+    'Romanticism',                  #7041
+    'Expressionism',                #5325
+    'Post-Impressionism']            #4527]
 num_classes = len(classes)
 
 # batch size
-batch_size = 16
+batch_size = 256
 
 # validation split
 validation_size = .2
@@ -192,6 +197,17 @@ def new_fc_layer(
 
     return layer
 
+def new_dropout_layer(
+    input,
+    rate,
+    noise_shape,
+    seed,
+    training,
+    name
+):
+    layer = tf.nn.dropout(input, rate, noise_shape, seed, name)
+    return layer
+
 def get_confusion_matrix(feed_dict_train, feed_dict_validate):
 
     predictions = session.run(y_pred_cls, feed_dict=feed_dict_validate)
@@ -254,7 +270,7 @@ def optimize(num_iterations):
         feed_dict_validate = {x: x_valid_batch,
                               y_true: y_valid_batch}
 
-        print(feed_dict_validate[x].shape)
+        #print(feed_dict_validate[x].shape)
 
         # Run the optimizer using this batch of training data.
         # TensorFlow assigns the variables in feed_dict_train
@@ -285,10 +301,11 @@ session = tf.Session(config=config)
 train_path='training_data'
 test_path='testing_data'
 
-dataset.partition_train_test('moma_class.csv', 0.75)
+#dataset.partition_train_test('moma_class.csv', 0.75)
 #dataset.partition_train_test('moma_nation.csv', 0.75)
 #dataset.partition_train_test('moma_date.csv', 0.75)
 #dataset.partition_train_test('moma_start_date.csv', 0.75)
+dataset.partition_train_test('train_style.csv', 0.75)
 
 print('=====Reading Training Sets=====')
 data = dataset.read_train_sets(train_path, img_size, classes, validation_size=validation_size)
@@ -309,40 +326,45 @@ x_image = tf.reshape(x, [-1, img_size, img_size, num_channels])
 y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
 y_true_cls = tf.argmax(y_true, dimension=1)
 
-layer_conv1, weights_conv1 = \
-new_conv_layer(input=x_image,
-               num_input_channels=num_channels,
-               filter_size=filter_size1,
-               num_filters=num_filters1,
-               use_pooling=True)
+#layer_conv1, weights_conv1 = \
+#new_conv_layer(input=x_image,
+#               num_input_channels=num_channels,
+#               filter_size=filter_size1,
+#               num_filters=num_filters1,
+#               use_pooling=True)
 #print("now layer2 input")
 #print(layer_conv1.get_shape())     
-layer_conv2, weights_conv2 = \
-new_conv_layer(input=layer_conv1,
-               num_input_channels=num_filters1,
-               filter_size=filter_size2,
-               num_filters=num_filters2,
-               use_pooling=True)
+#layer_conv2, weights_conv2 = \
+#new_conv_layer(input=layer_conv1,
+#               num_input_channels=num_filters1,
+#               filter_size=filter_size2,
+#               num_filters=num_filters2,
+#               use_pooling=True)
 #print("now layer3 input")
 #print(layer_conv2.get_shape())     
                
-layer_conv3, weights_conv3 = \
-new_conv_layer(input=layer_conv2,
-               num_input_channels=num_filters2,
-               filter_size=filter_size3,
-               num_filters=num_filters3,
-               use_pooling=True)
+#layer_conv3, weights_conv3 = \
+#new_conv_layer(input=layer_conv2,
+#               num_input_channels=num_filters2,
+#               filter_size=filter_size3,
+#               num_filters=num_filters3,
+#               use_pooling=True)
 #print("now layer flatten input")
 #print(layer_conv3.get_shape())     
           
-layer_flat, num_features = flatten_layer(layer_conv3)
+layer_flat, num_features = flatten_layer(x_image)#layer_conv1)
 
 layer_fc1 = new_fc_layer(input=layer_flat,
                      num_inputs=num_features,
                      num_outputs=fc_size,
                      use_relu=True)
-
-layer_fc2 = new_fc_layer(input=layer_fc1,
+layer_dropout1 = new_dropout_layer(layer_fc1,
+                    rate = 0.25,
+                    noise_shape=None,
+                    seed=None,
+                    training=None,
+                    name=None)
+layer_fc2 = new_fc_layer(input=layer_dropout1,
                      num_inputs=fc_size,
                      num_outputs=num_classes,
                      use_relu=False)

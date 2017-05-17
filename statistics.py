@@ -47,27 +47,29 @@ style_check = [						#number of examples
 	'Realism', 		 				#8112
 	'Romanticism', 		 			#7041
 	'Expressionism', 		 		#5325
-	'Post-Impressionism', 		 	#4527
-	'Art Nouveau (Modern)', 		#3779
-	'Baroque', 						#3254
-	'Surrealism', 					#3133
-	'Symbolism', 		 			#2626
-	'Rococo', 		 				#2101
-	'Northern Renaissance', 		 #1824
-	'Naïve Art (Primitivism)', 		# 1776
-	'Neoclassicism', 		 		#1622
-	'Abstract Expressionism', 		 #1546
-	'Cubism', 		 				#1316
-	'Ukiyo-e', 		 				#1137
-	'Early Renaissance', 		 	#1052
-	'High Renaissance', 		 	#1050
-	'Mannerism (Late Renaissance)',	#1025
-	'Art Informel', 		 		#987
-	'Academicism', 		 			#766
-	'Abstract Art', 		 		#759
-	'Magic Realism', 				#696
-	'Color Field Painting', 		#675
-	'Pop Art', 		 				#619
+	'Post-Impressionism' 		 	#4527
+
+	
+	#'Art Nouveau (Modern)', 		#3779
+	#'Baroque', 						#3254
+	#'Surrealism', 					#3133
+	#'Symbolism', 		 			#2626
+	#'Rococo', 		 				#2101
+	#'Northern Renaissance', 		 #1824
+	#'Naïve Art (Primitivism)', 		# 1776
+	#'Neoclassicism', 		 		#1622
+	#'Abstract Expressionism', 		 #1546
+	#'Cubism', 		 				#1316
+	#'Ukiyo-e', 		 				#1137
+	#'Early Renaissance', 		 	#1052
+	#'High Renaissance', 		 	#1050
+	#'Mannerism (Late Renaissance)',	#1025
+	#'Art Informel', 		 		#987
+	#'Academicism', 		 			#766
+	#'Abstract Art', 		 		#759
+	#Magic Realism', 				#696
+	#'Color Field Painting', 		#675
+	#'Pop Art', 		 				#619
 
 ]
 

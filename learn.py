@@ -46,7 +46,7 @@ y = y_label[idx]
 
 
 
-split = 10
+split = 20
 kf = KFold(n_splits=split) #leave-one-out: n_splits S= N-1
 
 total_acc = 0
@@ -56,9 +56,9 @@ for train_index, test_index in kf.split(X):
 	X_train, X_test = X[train_index], X[test_index]
 	y_train, y_test = y[train_index], y[test_index]
 
-	predict = OneVsRestClassifier(LinearSVC(C=10.0, random_state=0)).fit(X_train, y_train).predict(X_test)
+	predict = OneVsRestClassifier(SVC(C=10.0, kernel='rbf', random_state=0)).fit(X_train, y_train).predict(X_test)
 	acc = 1.0 * sum(list(i[0] == i[1] for i in zip(y_test, predict))) / len(y_test)
-	f1 = f1_score(y_test, predict, average='micro')
+	f1 = f1_score(y_test, predict, average='weighted')
 	confusion = confusion_matrix(y_test, predict)
 	
 

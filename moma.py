@@ -88,6 +88,17 @@ def make_soup(url):
     return BeautifulSoup(html, 'lxml')
 
 
+def image_available(url):
+    """
+    Checks if an image is available.
+    """
+    soup          = make_soup(url)
+    not_available = soup.find('div', class_='fpo-image__message__text')
+    if not_available != None and not_available.text != '':
+        return False
+    return True
+
+
 def get_image(url, filename):
     """
     Retrieves the image associated with the URL provided, and writes it using
@@ -175,9 +186,13 @@ def get_images(artworks_filename):
 
         if url is not None and classification is not None and len(nation) != 0 and date is not None:
             if classification in class_check and date in date_check and nation[0] in nation_check:
+
+                if not image_available(url):
+                    continue
             
                 image_filename = 'moma_' + str(object_id).zfill(padding) + '.jpg'
                 # get_image(url, image_filename)
+
                 classification_labels['moma_' + str(object_id).zfill(padding)] = classification 
                 nation_labels['moma_' + str(object_id).zfill(padding)] = nation[0]
                 date_labels['moma_' + str(object_id).zfill(padding)]  = date
